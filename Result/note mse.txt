@@ -1,0 +1,6 @@
+
+
+Sine	 4.5 e-2
+Sparse 	1.937 e-6
+ecg 	6.16876 e-3
+audio	2.563309 e-2
