@@ -1,5 +1,6 @@
 %% Load saved results
-load('smo_results.mat_v1','results');
+clc;close all;clear;
+load('smo_results_v2.mat','results');
 
 t = results.t;
 x = results.x;
@@ -30,3 +31,10 @@ figure;
 plot(t, error_z, 'LineWidth',1.5);
 xlabel('time'); ylabel('Error of z');
 title('Error dynamics of z'); grid on;
+
+%% Plot chaotic
+figure;
+plot3(x(:,1), x(:,2), x(:,3));
+grid on;
+xlabel('x1'); ylabel('x2'); zlabel('x3');
+title('Chaotic trajectory');

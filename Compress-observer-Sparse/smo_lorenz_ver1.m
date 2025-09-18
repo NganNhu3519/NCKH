@@ -27,7 +27,7 @@ A = [0,0,0,a1;
 %C = randi([0,3],3,4);
 C = [1 0 0 0;
      0 1 0 0;
-     0 0 0.1 1];
+     0 0 0.01 1];
 cond_C = cond(C)
 
 r1 = rank(C);
@@ -184,7 +184,7 @@ linear_injection = - G_l * e;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(20*e)) + linear_injection;
+        L * (y + rho*tanh(30*e)) + linear_injection;
 
 dxdt = [dxdt1; dxdt2];
 
@@ -212,4 +212,4 @@ end
 % results.Eigenvalue = Eigenvalue; % eigenvalues of N
 % results.x0      = x0;         % initial condition
 % 
-% save('smo_results.mat','results');
+% save('smo_results_v2.mat','results');

@@ -13,13 +13,13 @@ M=6*K; % the number of measurements
 x=zeros(N,1); 
 x(randperm(N,K))=randn(K,1);
 x_sparse = x;
-
 %% Sensing matrix construction
 phi=randn(M,N);
 %% Sensing using CS 
 y=phi*x;
 y_cp =y;
 save('y_measurement.mat','phi','y_cp','x_sparse')
+
 
 %% l1-recovery using linear program
 % 
@@ -42,17 +42,4 @@ save('y_measurement.mat','phi','y_cp','x_sparse')
 % 
 % disp("Mean square error is")
 % mse(x,x_hat)
-
-%% Plot
-figure;
-subplot(1,2,1);
-stem(x_sparse,'filled');
-title('K-sparse signal');
-xlabel('Index'); ylabel('Amplitude');
-grid on;
-
-subplot(1,2,2);
-imagesc(abs(x_sparse)); 
-colormap('hot'); colorbar;
-title('Heatmap of sparse signal');
 

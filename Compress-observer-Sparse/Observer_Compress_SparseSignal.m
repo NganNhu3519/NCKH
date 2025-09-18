@@ -12,16 +12,12 @@ global R N L M
 % Initialize the system
 a=1.7;
 
-% Run this section for random output matrix and random a_i until you find ones that
-% satisfy the LMIs.
-
 a1=randi([0,3]);
 a2=randi([0,3]);
 a3=randi([0,3]);
 
 E=[1,0,0,0;0,1,0,0;0,0,1,0];
 A=[0,0,0,a1;0,0,0,a2;0,0,0,a3];
-
 
 C=randi([0,3],3,4);
 
