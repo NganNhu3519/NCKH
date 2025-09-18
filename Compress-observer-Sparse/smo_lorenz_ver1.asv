@@ -27,7 +27,7 @@ A = [0,0,0,a1;
 %C = randi([0,3],3,4);
 C = [1 0 0 0;
      0 1 0 0;
-     0 0 0.01 1];
+     0 0 0.1 1];
 cond_C = cond(C)
 
 r1 = rank(C);
@@ -181,7 +181,7 @@ fh3 = xh1 .* xh2 - beta_L * xh3;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(12*e) +0.01*e);
+        L * (y + rho*tanh(12*e));
 
 dxdt = [dxdt1; dxdt2];
 end
