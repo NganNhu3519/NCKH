@@ -13,7 +13,7 @@ beta_L  = 8/3;         % beta
           
 a1 = 1;
 a2 = 1;
-a3 = 1;
+a3 = 2;
 
 % System matrices
 E = [1,0,0,0;
@@ -27,7 +27,7 @@ A = [0,0,0,a1;
 %C = randi([0,3],3,4);
 C = [1 0 0 0;
      0 1 0 0;
-     0 0 0.01 1];
+     0 0 0.1 1];
 cond_C = cond(C)
 
 r1 = rank(C);
@@ -76,7 +76,7 @@ fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1))
 
 %% Sliding Mode Observer Design
 L = 1.2 * pinv(C);
-rho = 6.0;
+rho = 8.0;
 
 % N và M
 N = Ahat - L * C;
@@ -87,7 +87,7 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
-x0 = [.1, .1, .1, 1, 1, 1, 0];
+x0 = [.1, .1, .1, 0, 0, 0, 0];
 tspan = 1:1:120;
 
 options = odeset('RelTol',1e-6,'AbsTol',1e-6); %5e-3
@@ -179,9 +179,37 @@ fh1 = sigma_L * (xh2 - xh1);
 fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
+G_l = 0.01 * eye(size(L,1), size(C,1));
+linear_injection = - G_l * e;
+
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(12*e) +0.01*e);
+        L * (y + rho*tanh(20*e)) + linear_injection;
 
 dxdt = [dxdt1; dxdt2];
+
+% dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
+%         R * [fh1; fh2; fh3] + ...
+%         L * (y + rho*tanh(20*e) +0.01*3)
+% 
+% dxdt = [dxdt1; dxdt2];
 end
+
+%% Result
+% results.t       = t;          % time vector
+% results.x       = x;          % true states [x1, x2, x3, z]
+% results.x_est   = x_est;      % estimated states
+% results.z       = z;          % true transmitted signal
+% results.error_z = z - x_est(4,:); % error dynamics of z
+% results.C       = C;          % observer matrix
+% results.L       = L;          % gain matrix
+% results.rho     = rho;        % SMO gain
+% results.N       = N;          % N matrix
+% results.M       = M;          % M matrix
+% results.R       = R;          % R matrix
+% results.Ahat    = Ahat;       % canonical A
+% results.Ehat    = Ehat;       % canonical E
+% results.Eigenvalue = Eigenvalue; % eigenvalues of N
+% results.x0      = x0;         % initial condition
+% 
+% save('smo_results.mat','results');
