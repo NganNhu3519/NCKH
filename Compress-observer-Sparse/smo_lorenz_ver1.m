@@ -2,7 +2,7 @@ close all; clear all; clc;
 
 % ===== Globals =====
 global a1 a2 a3 C                
-global R N L M rho                 
+global R N L M rho             
 global sigma_L rho_L beta_L        
 
 %% System Initialization
@@ -82,7 +82,7 @@ rho = 8.0;
 N = Ahat - L * C;
 format short
 
-Eigenvalue = eig(N)
+Eigenvalue = eig(N);
 Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';   % xhat = x_obs + M*y
 
@@ -136,6 +136,11 @@ ylabel('Error of z');
 title('Error dynamics of z');
 grid on;
 
+%% NMSE
+error_z = z - x_est(4,:);
+nmse = mean(error_z.^2) / mean(z.^2);
+fprintf('NMSE of z = %.7e\n', nmse);
+
 %% Sliding Mode Observer Function (Lorenz) =====
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)
 global R N L M rho
@@ -179,12 +184,27 @@ fh1 = sigma_L * (xh2 - xh1);
 fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
+
+k1 = 3.5;   % adjust
+k2 = 2.0;   % adjust
+alpha = 0.3;
+beta  = 2.5;
+
+% Nonlinear injection term (vector)
+phi_nl = -k1 * sign(e) .* abs(e).^alpha ...
+         -k2 * sign(e) .* abs(e).^beta;   % (3x1)
+
+% Linear injection
+%G_l = 0.01 * eye(size(L,1), size(C,1));
+G_nl = 0.01 * ones(size(L,1), size(C,1));
+nonlinear_injection = G_nl * phi_nl;
 G_l = 0.01 * eye(size(L,1), size(C,1));
-linear_injection = - G_l * e;
+
+linear_injection = - G_l * e + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(30*e)) + linear_injection;
+        L * (y + rho*tanh(50*e)) + linear_injection;
 
 dxdt = [dxdt1; dxdt2];
 
