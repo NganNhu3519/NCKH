@@ -144,7 +144,7 @@ fprintf('NMSE of z = %.7e\n', nmse);
 %% Sliding Mode Observer Function (Lorenz) =====
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)
 global R N L M rho
-global a a1 a2 a3     
+global a1 a2 a3     
 global C
 global sigma_L rho_L beta_L
 
@@ -185,26 +185,30 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 
-k1 = 3.5;   % adjust
-k2 = 2.0;   % adjust
+k1 = 3.5;   % base values
+k2 = 2.0;
 alpha = 0.3;
-beta  = 2.5;
+beta  = 2.4;
 
-% Nonlinear injection term (vector)
-phi_nl = -k1 * sign(e) .* abs(e).^alpha ...
-         -k2 * sign(e) .* abs(e).^beta;   % (3x1)
+% Adaptive gains
+k1_eff = k1 ./ (1 + abs(e));
+k2_eff = k2 ./ (1 + abs(e));
 
-% Linear injection
-%G_l = 0.01 * eye(size(L,1), size(C,1));
+% Nonlinear injection with adaptive gains
+phi_nl = -k1_eff .* sign(e) .* abs(e).^alpha ...
+         -k2_eff .* sign(e) .* abs(e).^beta;
 G_nl = 0.01 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
-G_l = 0.01 * eye(size(L,1), size(C,1));
 
-linear_injection = - G_l * e + nonlinear_injection;
+% % Linear injection
+% G_l = 0.008 * eye(size(L,1), size(C,1));
+% 
+% linear_injection = - G_l * e;
+% injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(50*e)) + linear_injection;
+        L * (y + rho*tanh(50*e)) + nonlinear_injection;
 
 dxdt = [dxdt1; dxdt2];
 
