@@ -184,27 +184,20 @@ fh1 = sigma_L * (xh2 - xh1);
 fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
-% Nonlinear injection
-k1 = 3.5;
-k2 = 2.0;
-alpha = 0.3;
-beta  = 2.4;
-
-phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-         -k2 .* sign(e) .* abs(e).^beta;
-G_nl = 0.01 * ones(size(L,1), size(C,1));
-nonlinear_injection = G_nl * phi_nl;
-
-% Linear injection
-
-% G_l = 0.01 * eye(size(L,1), size(C,1));
-% linear_injection = - G_l * e;
-% injection = linear_injection + nonlinear_injection;
-
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
         L * (y + rho*tanh(50*e)) + nonlinear_injection;
 
+% ===== Fixed-time update cho ẑ =====
+S = z - xhat(4,:);
+k1 = 3.5; k2 = 2.0; 
+alpha = 0.3; beta = 2.5;
+
+dz_hat = -k1*sign(S).*abs(S).^alpha ...
+         -k2*sign(S).*abs(S).^beta;
+
+
+dxdt2(end) = dz_hat;
 dxdt = [dxdt1; dxdt2];
 
 % dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...

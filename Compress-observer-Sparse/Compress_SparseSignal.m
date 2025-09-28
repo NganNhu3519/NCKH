@@ -16,10 +16,11 @@ x_sparse = x;
 
 %% Sensing matrix construction
 phi=randn(M,N);
+
 %% Sensing using CS 
 y=phi*x;
 y_cp =y;
-save('y_measurement.mat','phi','y_cp','x_sparse')
+save('y_measurement400.mat','phi','y_cp','x_sparse')
 
 %% l1-recovery using linear program
 % 
