@@ -75,8 +75,8 @@ rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 1.2 * pinv(C);
-rho = 8.0;
+L = 1.0 * pinv(C);
+rho = 6.0;
 
 % N và M
 N = Ahat - L * C;
@@ -87,8 +87,8 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
-x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 1:1:4;
+x0 = [.1, .1, .1, 1, 1, 1, 1];
+tspan = 1:1:120;
 
 options = odeset('RelTol',1e-6,'AbsTol',1e-6); %5e-3
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
@@ -149,7 +149,7 @@ global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-load y_sparse
+load y_img
 y_cp = y_cp(1:120)';
 z = y_cp(uint16(t));  
 
@@ -185,10 +185,10 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % Nonlinear injection
-k1 = 3.5;
-k2 = 2.6;
+k1 = 2.2;
+k2 = 1.6;
 alpha = 0.3;
-beta  = 2.4;
+beta  = 1.4;
 
 phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
          -k2 .* sign(e) .* abs(e).^beta;
@@ -196,13 +196,13 @@ G_nl = 0.01 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
 
 % Linear injection
- G_l = 0.03 * eye(size(L,1), size(C,1));
- linear_injection = - G_l * e;
- injection = linear_injection + nonlinear_injection;
+ % G_l = 0.05 * eye(size(L,1), size(C,1));
+ % linear_injection = - G_l * e;
+ % injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(50*e)) + injection;
+        L * (y + rho*tanh(50*e)) + nonlinear_injection;
 
 dxdt = [dxdt1; dxdt2];
 
