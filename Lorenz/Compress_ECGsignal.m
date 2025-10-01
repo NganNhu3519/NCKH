@@ -24,6 +24,6 @@ phi(phi==0)=-1;
 %% Sensing using CS 
 y_ecg = phi*x_ecg;
 y_ecg_cp =y_ecg;
-save('y_measurement.mat','phi','y_ecg_cp','psi')
+save('y_ECG.mat','phi','y_cp','psi')
 
 

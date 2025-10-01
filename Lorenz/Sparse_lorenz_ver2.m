@@ -88,7 +88,7 @@ M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 1:1:120;
+tspan = 1:1:4;
 
 options = odeset('RelTol',1e-6,'AbsTol',1e-6); %5e-3
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
@@ -149,7 +149,7 @@ global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-load y_measurement
+load y_ECG
 y_cp = y_cp(1:120)';
 z = y_cp(uint16(t));  
 
