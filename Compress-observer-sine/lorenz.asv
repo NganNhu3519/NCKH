@@ -141,7 +141,7 @@ fh3 = xh1.*xh2 - beta_L*xh3;
 
 dxdt2 = N*[x(4,:);x(5,:);x(6,:);x(7,:)] ...
       + R*[fh1;fh2;fh3] ...
-      + L*(y + 6.0*tanh(50*e));
+      + L*(y + 6.0*sign(e));
 
 dxdt = [dxdt1;dxdt2];
 end

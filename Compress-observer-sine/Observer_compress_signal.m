@@ -125,6 +125,19 @@ xlabel('time')
 set(gca,'fontsize',11)
 set(gca,'fontweight','bold')
 
+%% Error dynamics for z
+error_z = z - x_est(4,:); 
+
+figure;
+plot(t, error_z, 'LineWidth',1.5);
+xlabel('time');
+ylabel('Error of z');
+title('Error dynamics of z');
+grid on;
+
+nmse = mean(error_z.^2) / mean(z.^2);
+fprintf('NMSE of z = %.7e\n', nmse);
+
 %% DECLARE FUNCTION
 function [dxdt,y,xhat,z]= linechaos_obs(t,x)
 global R N L M
