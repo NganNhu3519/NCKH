@@ -135,9 +135,6 @@ ylabel('Error of z');
 title('Error dynamics of z');
 grid on;
 
-nmse = mean(error_z.^2) / mean(z.^2);
-fprintf('NMSE of z = %.7e\n', nmse);
-
 %% DECLARE FUNCTION
 function [dxdt,y,xhat,z]= linechaos_obs(t,x)
 global R N L M

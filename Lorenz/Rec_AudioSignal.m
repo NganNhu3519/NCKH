@@ -17,8 +17,9 @@ end
 L =10; % num of block of audio signal
 N = 1000;
 
-load y_measurement.mat
-load x_est.mat
+load y_Audio.mat
+% load x_est.mat
+load D:\NCKH\Github\NCKH\Lorenz\Result\Audio_results_v1.mat
 y_new = results.x_est(4,:)';
 M = length(y_new)/L;  % length of y new
 Theta = phi*psi';
@@ -42,7 +43,7 @@ subplot(211),plot(y_cp,'b.','MarkerSize',10);legend('Compressed & encrypted sign
       ylim([-15 15])
 subplot(212),plot(audio_new,'LineWidth',2); hold on; plot(x_rec, 'r.','MarkerSize',10);...
     legend('Original', 'Recovered');xlabel('(b)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);...
-sgtitle('ECG signal - Compressed \& Encrypted Signal','Interpreter','latex','FontSize',20)
+sgtitle('Audio signal - Compressed \& Encrypted Signal','Interpreter','latex','FontSize',20)
 mse1 = mse(audio_new,x1);
 disp('Audio signal')
 fprintf('MSE of Audio: %d \n',mse1)

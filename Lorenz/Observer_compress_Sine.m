@@ -146,7 +146,7 @@ global C
 % 
 %z= 0.3*cos(pi*t);
 % load orig_sig
-load y_measurement
+load y_sine
 y_cp=y_cp';
 z = y_cp(uint16(100*t));
 % master system
