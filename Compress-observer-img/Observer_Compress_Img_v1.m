@@ -125,7 +125,7 @@ xlabel('time')
 set(gca,'fontsize',11)
 set(gca,'fontweight','bold')
 
-save('WS_new')
+% save('WS_new')
 %% DECLARE FUNCTION
 function [dxdt,y,xhat,z]= linechaos_obs(t,x)
 global R N L M

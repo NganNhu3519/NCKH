@@ -5,7 +5,8 @@ close all;clear;clc;
 
 %% Load WS-Inputv in
 load y_sine.mat
-load D:\NCKH\Github\NCKH\Lorenz\Result\Sine_results_v1.mat
+% load D:\NCKH\Github\NCKH\Lorenz\Result\Sine_results_v1.mat
+load D:\Thungan\Github\NCKH\Lorenz\Result\Sine_results_v3.mat
 y_new = results.x_est(4,:)';
 
 t = 0.01:0.01:10;

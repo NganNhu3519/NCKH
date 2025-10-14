@@ -19,7 +19,8 @@ N = 1000;
 
 load y_Audio.mat
 % load x_est.mat
-load D:\NCKH\Github\NCKH\Lorenz\Result\Audio_results_v1.mat
+% load D:\NCKH\Github\NCKH\Lorenz\Result\Audio_results_v1.mat
+load D:\Thungan\Github\NCKH\Lorenz\Result\Audio_results_v2.mat
 y_new = results.x_est(4,:)';
 M = length(y_new)/L;  % length of y new
 Theta = phi*psi';

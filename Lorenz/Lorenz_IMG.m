@@ -11,9 +11,9 @@ sigma_L = 10;          % sigma
 rho_L   = 28;          
 beta_L  = 8/3;         % beta
           
-a1 = 0.25;
-a2 = 0.25;
-a3 = 0.5;
+a1 = 1;
+a2 = 1;
+a3 = 2;
 
 % System matrices
 E = [1,0,0,0;
@@ -25,9 +25,9 @@ A = [0,0,0,a1;
      0,0,0,a3];       
 
 %C = randi([0,3],3,4);
-C = [1 0 0 0;
-     0 1 0 0;
-     0 0 0.01 1];
+C = [1 0 0 1;
+     0 1 0 1;
+     0 0 0.30 1];
 cond_C = cond(C)
 
 r1 = rank(C);
@@ -75,22 +75,22 @@ rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 0.9 * pinv(C);
-rho = 3.0;
+L = 1.15 * pinv(C);
+rho = 4.0;
 
 % N và M
 N = Ahat - L * C;
 format short
 
-Eigenvalue = eig(N);
+Eigenvalue = eig(N)
 Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 0.01:0.01:4; 
+tspan = 0.01:0.01:2; 
 
-options = odeset('RelTol',1e-4,'AbsTol',1e-4); %5e-3
+options = odeset('RelTol',1e-4,'AbsTol',1e-4); 
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 [~, y, x_est, z] = lorenz_smo(t', x');
 %save('x_est1.mat','x_est');
@@ -133,7 +133,7 @@ figure;
 plot(t, z - x_est(4,:), 'LineWidth',1.5);
 xlabel('time');
 ylabel('Error of z');
-title('ECG Error dynamics of z');
+title('IMG Error dynamics of z');
 grid on;
 
 %% NMSE
@@ -143,8 +143,8 @@ z_norm     = z / max(abs(z));
 x_est_norm = x_est(4,:) / max(x_est(4,:));
 error_z = z_norm - x_est_norm;
 nmse_point = error_z.^2;
-nmse = mean(nmse_point);
-fprintf('NMSE (normalized by max) = %.7e\n', nmse);
+nmse_img = mean(nmse_point);
+fprintf('NMSE (normalized by max) = %.7e\n', nmse_img);
 
 %% Sliding Mode Observer Function (Lorenz) =====
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)
@@ -154,12 +154,8 @@ global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-% load z_norm
-% idx = min(max(round(t),1), numel(z_norm));
-% z   = z_norm(idx);
-
-load y_ECG
-y_cp = y_cp';
+load y_imgv11.mat
+y_cp=y_cp';
 z = y_cp(uint16(100*t));
 
 % Lorenz plant dynamics (f(x) + B z)
@@ -194,24 +190,23 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % Nonlinear injection
-k1 = 0.8;
-k2 = 1.5;
-alpha = 0.3;
-beta  = 1.5;
-
+k1    = 1.3;
+k2    = 0.9;
+alpha = 0.5;
+beta  = 1.4; 
 phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
          -k2 .* sign(e) .* abs(e).^beta;
-G_nl = 0.01 * ones(size(L,1), size(C,1));
+G_nl = 0.006 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
 
 % Linear injection
- G_l = 0.01 * eye(size(L,1), size(C,1));
+ G_l = 0.08 * eye(size(L,1), size(C,1));
  linear_injection = - G_l * e;
  injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(30*e)) + injection;
+        L * (y + rho*tanh(30*e)) + injection ;
 
 dxdt = [dxdt1; dxdt2];
 end
@@ -225,7 +220,7 @@ end
 % results.x_est     = x_est;              % estimated states
 % results.z         = z;                  % true transmitted signal
 % results.error_z   = error_z;            % error dynamics of z
-% results.NMSE      = nmse;               % NMSE value
+% results.NMSE      = nmse_img;               % NMSE value
 % results.x0        = x0;                 % initial condition
 % 
 % % --- System parameters ---
@@ -235,8 +230,8 @@ end
 % results.a1        = a1;                 % system input coeff a1
 % results.a2        = a2;                 % system input coeff a2
 % results.a3        = a3;                 % system input coeff a3
-% 
-% % --- Observer matrices ---
+% % 
+% % % --- Observer matrices ---
 % results.C         = C;                  % observer output matrix
 % results.L         = L;                  % SMO gain matrix
 % results.rho       = rho;                % SMO tanh gain
@@ -246,7 +241,7 @@ end
 % results.Ahat      = Ahat;               % canonical A
 % results.Ehat      = Ehat;               % canonical E
 % results.Eigenvalue = Eigenvalue;        % eigenvalues of N
-% 
+% % 
 % k1 = 0.8;
 % k2 = 1.5;
 % alpha = 0.3;
@@ -261,14 +256,15 @@ end
 % results.beta      = beta;               % nonlinear injection exponent beta
 % results.G_nl      = G_nl;               % nonlinear injection matrix
 % results.G_l       = G_l;                % linear injection matrix
-% 
-% % --- Additional info ---
+% % 
+% % % --- Additional info ---
 % results.rank_a    = rank_a;             % rank condition (a)
 % results.rank_obsv = rank_obsv;          % rank of observability matrix
 % results.cond_C    = cond_C;             % condition number of C
-% 
-% % Save to .mat file
-% save('D:\NCKH\Github\NCKH\Lorenz\Result\ECG_results_v1.mat','results');
+% % 
+% % % Save to .mat file
+% % save('D:\NCKH\Github\NCKH\Lorenz\Result\IMG_results_v1.mat','results');
+% save('D:\Thungan\Github\NCKH\Lorenz\Result\IMG_results_v2.mat','results');
 
 %% Save load data
 % plotData = struct;
@@ -281,17 +277,18 @@ end
 % plotData.error_z = error_z;            % sai số z
 % 
 % % --- Metrics ---
-% plotData.NMSE    = nmse;               % chỉ số NMSE
+% plotData.NMSE    = nmse_img;               % chỉ số NMSE
 % 
-% % --- Parameters (optional) ---
+% % % --- Parameters (optional) ---
 % plotData.x0      = x0;                 
 % plotData.sigma_L = sigma_L;            
 % plotData.rho_L   = rho_L;              
-% plotData.beta_L  = beta_L;             
+% plotData.beta_L  = beta_L;  
+% plotData.rho     = rho;   
 % plotData.k1      = k1;                 
 % plotData.k2      = k2;                 
 % plotData.alpha   = alpha;              
 % plotData.beta    = beta;               
-% plotData.rho     = rho;                
 % 
-% save('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\ECG_v1.mat','plotData');
+% % save('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\IMG_v1.mat','plotData');
+% save('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\IMG_v2.mat','plotData');

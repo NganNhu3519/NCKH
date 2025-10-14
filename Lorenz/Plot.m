@@ -34,7 +34,8 @@ fprintf('NMSE (Sine) = %.6e\n', nmse);
 %% ================== ECG ==================
 clear; clc; close all;
 
-load('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\ECG_v1.mat','plotData');
+% load('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\ECG_v1.mat','plotData');
+load('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\ECG_v2.mat','plotData');
 
 t       = plotData.t;
 x       = plotData.x_true;
