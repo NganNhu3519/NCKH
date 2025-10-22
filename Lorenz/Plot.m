@@ -90,3 +90,32 @@ xlabel('time'); ylabel('Error of z');
 title('Error dynamics of z');
 
 fprintf('NMSE (Audio) = %.6e\n', nmse);
+
+%% ================== IMG ==================
+clear; clc; close all;
+
+load('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\IMG_v1.mat','plotData');
+
+t       = plotData.t;
+x       = plotData.x_true;
+x_est   = plotData.x_est;
+z       = plotData.z;
+error_z = plotData.error_z;
+nmse    = plotData.NMSE;
+
+figure;
+subplot(2,2,1); plot(t,x(:,1),t,x_est(1,:)); grid on; legend('x1','x1 est');
+xlabel('time'); ylabel('x1');
+subplot(2,2,2); plot(t,x(:,2),t,x_est(2,:)); grid on; legend('x2','x2 est');
+xlabel('time'); ylabel('x2');
+subplot(2,2,3); plot(t,x(:,3),t,x_est(3,:)); grid on; legend('x3','x3 est');
+xlabel('time'); ylabel('x3');
+subplot(2,2,4); plot(t,z,t,x_est(4,:)); grid on; legend('z','z est');
+xlabel('time'); ylabel('Signal');
+
+figure;
+plot(t,error_z,'LineWidth',1.2); grid on;
+xlabel('time'); ylabel('Error of z');
+title('Error dynamics of z');
+
+fprintf('NMSE (IMG) = %.6e\n', nmse);

@@ -2,7 +2,7 @@
 % Date: Sept 2024
 % Reconstruct Img signal
 
-close all;clear all;clc;
+% close all;clear all;clc;
 
 %% Load Input image
 %L =10; % num of block of audio signal
@@ -14,16 +14,16 @@ Img_arr = double(Img_org(:));      % image array
 L = length(Img_arr)/N;
 
 %% Load WS
-load y_imgv11.mat
-load x_est_img.mat
-% load D:\Thungan\Github\NCKH\Lorenz\Result\IMG_results_v1.mat
-% y_new = results.x_est(4,:)';
-y_new = x_est(4,:)';
+load y_imgv1.mat
+%load x_est_img.mat
+load D:\Thungan\Github\NCKH\Lorenz\Result\IMG_results_v1.mat
+y_new = results.x_est(4,:)';
+% y_new = x_est(4,:)';
 M = length(y_new)/L;  % length of y new
 Theta = phi*psi';
 %%
 for i=1 : L
-s21 = pinv(Theta).*y_new(M*(i-1)+1: M*i);
+s21 = pinv(Theta)*y_new(M*(i-1)+1: M*i);
 s1 = l1eq_pd(s21,Theta,Theta',y_new(M*(i-1)+1: M*i),5e-3,20); % L1-magic toolbox
 x1(:,i) = psi'*s1;
 end
