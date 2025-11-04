@@ -2,7 +2,7 @@
 % Date: Sept 2024
 % Reconstruct Img signal
 
-% close all;clear all;clc;
+close all;clear all;clc;
 
 %% Load Input image
 %L =10; % num of block of audio signal
@@ -22,11 +22,14 @@ y_new = results.x_est(4,:)';
 M = length(y_new)/L;  % length of y new
 Theta = phi*psi';
 %%
+tic %time
 for i=1 : L
 s21 = pinv(Theta)*y_new(M*(i-1)+1: M*i);
 s1 = l1eq_pd(s21,Theta,Theta',y_new(M*(i-1)+1: M*i),5e-3,20); % L1-magic toolbox
 x1(:,i) = psi'*s1;
 end
+toc
+
 x_rec = x1(:);
 x_hat=vec2mat(x_rec,100)';
  % using median filter
@@ -35,8 +38,6 @@ x_hat_filt= medfilt2(x_hat, [2 2]);
 %gaussianFilter = fspecial('gaussian', 5, 2);
 gaussianFilter = fspecial('gaussian', 2, 2);
 deblurredImage = imfilter(x_hat, gaussianFilter, 'replicate');
-
-
 
 % %% l1-recovery using linear program
 % phi_rec=phi*psi';
@@ -65,7 +66,6 @@ legend('Original', 'Recovered');
 figure;
 y_enc_cp = y_cp(1:63^2);y_enc_cp = mod(y_enc_cp,255);imshow(uint8(vec2mat(y_enc_cp,63)'));
 
-
 figure;
 subplot(131);imshow(uint8(Img_org));title('Original Image','Interpreter','latex','FontSize',13)
 subplot(132);imshow(uint8(vec2mat(y_enc_cp,63)'));title('Compressed \& Encrypted Image','Interpreter','latex','FontSize',13)
@@ -74,9 +74,25 @@ subplot(133);imshow(uint8(x_hat));title('Reconstructed Image','Interpreter','lat
 % subplot(224);imshow(uint8(deblurredImage));title('Reconstructed Deblur- Image')
 % x_hat= medfilt2(x_hat, [2 2])
 % figure; imshow(uint8(filtered_img))
-mse1 = mse(Img_arr,x_rec)
-mse2 = mse(Img_arr,x_hat_filt(:))
-mse3 = mse(Img_arr,deblurredImage(:))
-disp('Image')
-fprintf('MSE: %d \n',mse1)
- 
+
+%% MSE
+x_hat = double(x_hat(:));
+x_hat_filt = double(x_hat_filt(:));
+deblurredImage = double(deblurredImage(:));
+
+if size(Img_arr) ~= size(x_hat), x_hat = x_hat'; end
+if size(Img_arr) ~= size(x_hat_filt), x_hat_filt = x_hat_filt'; end
+if size(Img_arr) ~= size(deblurredImage), deblurredImage = deblurredImage'; end
+
+mse1 = immse(x_hat, Img_arr);
+mse2 = immse(x_hat_filt, Img_arr);
+mse3 = immse(deblurredImage, Img_arr);
+
+peak_val = max(abs(Img_arr));
+[psnr1, snr1] = psnr(x_hat, Img_arr, peak_val);
+[psnr2, snr2] = psnr(x_hat_filt, Img_arr, peak_val);
+[psnr3, snr3] = psnr(deblurredImage, Img_arr, peak_val);
+
+fprintf('Raw:   MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB\n', mse1, psnr1, snr1);
+fprintf('Median:MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB\n', mse2, psnr2, snr2);
+fprintf('Gauss: MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB\n', mse3, psnr3, snr3);

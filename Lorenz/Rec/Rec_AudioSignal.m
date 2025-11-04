@@ -20,13 +20,17 @@ N = 1000;
 load y_Audio.mat
 % load x_est.mat
 % load D:\NCKH\Github\NCKH\Lorenz\Result\Audio_results_v1.mat
-load D:\Thungan\Github\NCKH\Lorenz\Result\Audio_results_v2.mat
+load D:\Thungan\Github\NCKH\Lorenz\Result\Audio_results_v1.mat
 y_new = results.x_est(4,:)';
 M = length(y_new)/L;  % length of y new
 Theta = phi*psi';
 for i=1 : L
 s21 = pinv(Theta)*y_new(M*(i-1)+1: M*i);
+
+tic
 s1 = l1eq_pd(s21,Theta,Theta',y_new(M*(i-1)+1: M*i),5e-3,20); % L1-magic toolbox
+toc
+
 x1(:,i) = psi'*s1;
 end
 x_rec = x1(:);
@@ -45,9 +49,6 @@ subplot(211),plot(y_cp,'b.','MarkerSize',10);legend('Compressed & encrypted sign
 subplot(212),plot(audio_new,'LineWidth',2); hold on; plot(x_rec, 'r.','MarkerSize',10);...
     legend('Original', 'Recovered');xlabel('(b)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);...
 sgtitle('Audio signal - Compressed \& Encrypted Signal','Interpreter','latex','FontSize',20)
-mse1 = mse(audio_new,x1);
-disp('Audio signal')
-fprintf('MSE of Audio: %d \n',mse1)
  
   %% Sound
 % sound(audio_new,Fs);        % original audio
@@ -55,3 +56,15 @@ fprintf('MSE of Audio: %d \n',mse1)
 % sound((x_est(3,:))',Fs);    % compress-encrypted audio
 % pause(3)
 % sound(x_rec,Fs);            % reconstructed audio
+
+%% MSE
+x_rec = x1(:);
+x_rec = double(x_rec);
+audio_new = double(audio_new);
+
+mse1 = immse(audio_new, x_rec);
+peak_val = max(abs(audio_new));
+[psnr1, snr1] = psnr(x_rec, audio_new, peak_val);
+
+fprintf('Audio\n');
+fprintf('MSE = %.6e | PSNR = %.2f dB | SNR = %.2f dB\n', mse1, psnr1, snr1);
