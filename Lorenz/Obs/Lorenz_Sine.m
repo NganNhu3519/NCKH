@@ -93,7 +93,7 @@ tspan = 0.01:0.01:4;
 options = odeset('RelTol',1e-4,'AbsTol',1e-4); %5e-3
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
-toc
+recon = toc;
 [~, y, x_est, z] = lorenz_smo(t', x');
 %save('x_est1.mat','x_est');
 
@@ -141,17 +141,22 @@ grid on;
 %% MSE
 % z = results.z;
 % x_est = results.x_est;
-% z_norm     = z / max(abs(z));
-% x_est_norm = x_est(4,:) / max(x_est(4,:));
-% error_z = z_norm - x_est_norm;
-% nmse_point = error_z.^2;
-% nmse_sine = mean(nmse_point);
-mse_sine = mse(z,x_est);
+if size(z) ~= size(x_est(4,:))
+    x_est(4,:) = x_est(4,:)';
+end
+
+mse_sine = mse(z,x_est(4,:));
 peak_val = max(abs(z));
-[peaksnr, snr] = psnr(x_est, z, peak_val);
-fprintf('PSNR (Correct): %.4f dB\n', peaksnr);
-fprintf('SNR: %.4f dB\n', snr);
-fprintf('MSE (normalized by max) = %.7e\n', mse_sine);
+[peaksnr_sine, snr_sine] = psnr(x_est(4,:), z, peak_val);
+R = corrcoef(z, x_est(4,:));
+CC = R(1,2);
+
+fprintf('Reconstruction time: %.6f seconds\n', recon);
+fprintf('MSE of Ber: %d \n',mse_sine)
+fprintf('PSNR (Correct): %.4f dB\n', peaksnr_sine);
+fprintf('SNR: %.4f dB\n', snr_sine);
+format long
+fprintf('Correlation Coefficient: %f\n', CC);
 
 %% Sliding Mode Observer Function (Lorenz) =====
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)
@@ -256,7 +261,7 @@ end
 % 
 % % Save to .mat file
 % % save('D:\NCKH\Github\NCKH\Lorenz\Result\Sine_results_v2.mat','results');
-save('D:\Thungan\Github\NCKH\Lorenz\Result\Sine_results_v3.mat','results');
+% save('D:\Thungan\Github\NCKH\Lorenz\Result\Sine_results_v3.mat','results');
 
 %% Save load data
 % plotData = struct;
@@ -280,7 +285,7 @@ save('D:\Thungan\Github\NCKH\Lorenz\Result\Sine_results_v3.mat','results');
 % plotData.k2      = k2;                 
 % plotData.alpha   = alpha;              
 % plotData.beta    = beta;               
-plotData.rho     = rho;                
+% plotData.rho     = rho;                
 % 
 % save('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\Sine_v2.mat','plotData');
-save('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\Sine_v3.mat','plotData');
+% save('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\Sine_v3.mat','plotData');

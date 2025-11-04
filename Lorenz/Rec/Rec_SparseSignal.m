@@ -10,7 +10,7 @@ K=20; % sparsity of signal
 M=6*K; % the number of measurements 
 psi=dctmtx(N); %make sparse
 %% Load WS-Inputv in
-load y_sparse.mat
+load D:\Thungan\Github\NCKH\Lorenz\Obs\y_sparse.mat
 % load x_est.mat
 load D:\Thungan\Github\NCKH\Lorenz\Result\Sparse_results_v1.mat
 y_new = results.x_est(4,:)';
@@ -24,7 +24,7 @@ ssOpt=optimoptions('linprog', 'Algorithm', 'interior-point');
 
 tic %time
 z_hat=linprog(Vec_ones,[],[], [phi -phi], y_new, Vec_low, Vec_high,ssOpt);
-toc
+recon = toc;
 
 x_hat=z_hat(1:N)-z_hat(1+N:end);
 for i=1:N
@@ -60,7 +60,13 @@ end
 
 peak_val = max(abs(x_sparse));
 mse1 = mse(x_sparse, x_hat);
-[psnr1, snr1] = psnr(x_hat, x_sparse,peak_val);
+[peaksnr, snr] = psnr(x_hat, x_sparse,peak_val);
+R = corrcoef(x_sparse, x_hat);
+CC = R(1,2);
 
-fprintf('Sparse signal\n');
-fprintf('MSE = %.6e | PSNR = %.2f dB | SNR = %.2f dB\n', mse1, psnr1, snr1);
+fprintf('Reconstruction time: %.6f seconds\n', recon);
+fprintf('MSE of Ber: %d \n',mse1)
+fprintf('PSNR (Correct): %.4f dB\n', peaksnr);
+fprintf('SNR: %.4f dB\n', snr);
+format long
+fprintf('Correlation Coefficient: %f\n', CC);

@@ -14,7 +14,7 @@ Img_arr = double(Img_org(:));      % image array
 L = length(Img_arr)/N;
 
 %% Load WS
-load y_imgv1.mat
+load D:\Thungan\Github\NCKH\Lorenz\Obs\y_imgv1.mat
 %load x_est_img.mat
 load D:\Thungan\Github\NCKH\Lorenz\Result\IMG_results_v1.mat
 y_new = results.x_est(4,:)';
@@ -28,7 +28,7 @@ s21 = pinv(Theta)*y_new(M*(i-1)+1: M*i);
 s1 = l1eq_pd(s21,Theta,Theta',y_new(M*(i-1)+1: M*i),5e-3,20); % L1-magic toolbox
 x1(:,i) = psi'*s1;
 end
-toc
+recon = toc;
 
 x_rec = x1(:);
 x_hat=vec2mat(x_rec,100)';
@@ -57,19 +57,22 @@ deblurredImage = imfilter(x_hat, gaussianFilter, 'replicate');
 
 %% Reconstruction
 %figure;plot(y_cp);title('linear measurement y')
-figure;
-plot(Img_arr); hold on; 
-plot(x_rec, 'r.'); title('Image Reconstruction');
-legend('Original', 'Recovered');
+%-----------------------------------------------
+% figure;
+% plot(Img_arr); hold on; 
+% plot(x_rec, 'r.'); title('Image Reconstruction');
+% legend('Original', 'Recovered');
 
 % Compress image
-figure;
-y_enc_cp = y_cp(1:63^2);y_enc_cp = mod(y_enc_cp,255);imshow(uint8(vec2mat(y_enc_cp,63)'));
+% figure;
+% y_enc_cp = y_cp(1:63^2);y_enc_cp = mod(y_enc_cp,255);imshow(uint8(vec2mat(y_enc_cp,63)'));
+% 
+% figure;
+% subplot(131);imshow(uint8(Img_org));title('Original Image','Interpreter','latex','FontSize',13)
+% subplot(132);imshow(uint8(vec2mat(y_enc_cp,63)'));title('Compressed \& Encrypted Image','Interpreter','latex','FontSize',13)
+% subplot(133);imshow(uint8(x_hat));title('Reconstructed Image','Interpreter','latex','FontSize',13)
+%-------------------------------------------------
 
-figure;
-subplot(131);imshow(uint8(Img_org));title('Original Image','Interpreter','latex','FontSize',13)
-subplot(132);imshow(uint8(vec2mat(y_enc_cp,63)'));title('Compressed \& Encrypted Image','Interpreter','latex','FontSize',13)
-subplot(133);imshow(uint8(x_hat));title('Reconstructed Image','Interpreter','latex','FontSize',13)
 % subplot(223);imshow(uint8(x_hat_filt));title('Reconstructed Image with Median filter')
 % subplot(224);imshow(uint8(deblurredImage));title('Reconstructed Deblur- Image')
 % x_hat= medfilt2(x_hat, [2 2])
@@ -93,6 +96,14 @@ peak_val = max(abs(Img_arr));
 [psnr2, snr2] = psnr(x_hat_filt, Img_arr, peak_val);
 [psnr3, snr3] = psnr(deblurredImage, Img_arr, peak_val);
 
-fprintf('Raw:   MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB\n', mse1, psnr1, snr1);
-fprintf('Median:MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB\n', mse2, psnr2, snr2);
-fprintf('Gauss: MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB\n', mse3, psnr3, snr3);
+R1 = corrcoef(Img_arr, x_hat);          
+CC1 = R1(1,2);
+R2 = corrcoef(Img_arr, x_hat_filt);     
+CC2 = R2(1,2);
+R3 = corrcoef(Img_arr, deblurredImage);
+CC3 = R3(1,2);
+
+fprintf('Reconstruction time: %.6f seconds\n', recon);
+fprintf('Raw:   MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB | CC=%.6f\n', mse1, psnr1, snr1, CC1);
+fprintf('Median:MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB | CC=%.6f\n', mse2, psnr2, snr2, CC2);
+fprintf('Gauss: MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB | CC=%.6f\n', mse3, psnr3, snr3, CC3);

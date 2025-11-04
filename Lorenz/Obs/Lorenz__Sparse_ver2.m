@@ -91,7 +91,9 @@ x0 = [.1, .1, .1, 0, 0, 0, 0];
 tspan = 1:1:120;
 
 options = odeset('RelTol',1e-6,'AbsTol',1e-6); %5e-3
+tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
+recon = toc;
 [~, y, x_est, z] = lorenz_smo(t', x');
 %save('x_est1.mat','x_est');
 
@@ -137,13 +139,22 @@ title('Error dynamics of z');
 grid on;
 
 %% NMSE
-z_norm     = z / max(abs(z));
-x_est_norm = x_est(4,:) / max(abs(z));
-error_z = z_norm - x_est_norm;
-nmse_point = error_z.^2;
-nmse_sparse = mean(nmse_point);
+if size(z) ~= size(x_est(4,:))
+    x_est(4,:) = x_est(4,:)';
+end
 
-fprintf('NMSE (normalized by max) = %.7e\n', nmse_sparse);
+mse_sparse = mse(z,x_est(4,:));
+peak_val = max(abs(z));
+[peaksnr_sparse, snr_sparse] = psnr(x_est(4,:), z, peak_val);
+R = corrcoef(z, x_est(4,:));
+CC = R(1,2);
+
+fprintf('Reconstruction time: %.6f seconds\n', recon);
+fprintf('MSE of Ber: %d \n',mse_sparse)
+fprintf('PSNR (Correct): %.4f dB\n', peaksnr_sparse);
+fprintf('SNR: %.4f dB\n', snr_sparse);
+format long
+fprintf('Correlation Coefficient: %f\n', CC);
 
 %% Sliding Mode Observer Function (Lorenz) =====
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)

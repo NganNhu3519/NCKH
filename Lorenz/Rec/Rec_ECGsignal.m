@@ -5,11 +5,11 @@
 close all;clear all;clc;
 N=1000;
 %% Load WS-Inputv in
-load y_ECGv2.mat
+load D:\Thungan\Github\NCKH\Lorenz\Obs\y_ECGv1.mat
 % load x_estimate.mat
 % load D:\NCKH\Github\NCKH\Lorenz\Result\ECG_results_v1.mat
-load D:\Thungan\Github\NCKH\Lorenz\Result\ECG_results_v3.mat
-load ecgsig.mat
+load D:\Thungan\Github\NCKH\Lorenz\Result\ECG_results_v1.mat
+load D:\Thungan\Github\NCKH\Lorenz\Obs\ecgsig.mat
 x_ecg=ecgsig(1:N,1);
 y_new = results.x_est(4,:)';
 
@@ -18,7 +18,7 @@ s21 = pinv(Theta1)*y_new;
 
 tic
 s1 = l1eq_pd(s21,Theta1,Theta1',y_new,5e-3,20); % L1-magic toolbox
-toc
+recon = toc;
 
 x1 = psi'*s1;
 %% Reconstruction with 
@@ -26,7 +26,7 @@ x1 = psi'*s1;
 % figure;plot(x_ecg); hold on; plot(x1, 'r.'); title('ECG Signal'); legend('Original', 'Recovered');
 
 figure;
-subplot(211),plot(y_ecg_cp ,'b.','MarkerSize',10);legend('Compressed & encrypted signal');...
+subplot(211),plot(y_cp ,'b.','MarkerSize',10);legend('Compressed & encrypted signal');...
     xlabel('(a)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);
 subplot(212),plot(x_ecg,'LineWidth',2); hold on; plot(x1, 'r.','MarkerSize',10);...
     legend('Original', 'Recovered');xlabel('(b)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);...
@@ -41,7 +41,20 @@ end
 
 mse1 = immse(x_ecg, x1);
 peak_val = max(abs(x_ecg)); 
-[psnr1, snr1] = psnr(x1, x_ecg, peak_val); 
+[peaksnr, snr] = psnr(x1, x_ecg, peak_val); 
+R = corrcoef(x_ecg, x1);
+CC = R(1,2);
 
-fprintf('ECG \n');
-fprintf('MSE = %.6e | PSNR = %.2f dB | SNR = %.2f dB\n', mse1, psnr1, snr1);
+fprintf('Reconstruction time: %.6f seconds\n', recon);
+fprintf('MSE of Ber: %d \n',mse1)
+fprintf('PSNR (Correct): %.4f dB\n', peaksnr);
+fprintf('SNR: %.4f dB\n', snr);
+format long
+fprintf('Correlation Coefficient: %f\n', CC);
+
+figure;
+plot(SNR_values, PSNR_values, '-o','LineWidth',1.5);
+xlabel('SNR (dB)'); ylabel('PSNR (dB)');
+title('PSNR–SNR Relationship Across Signals');
+grid on;
+legend('Sine','Sparse','Audio','ECG','Image');
