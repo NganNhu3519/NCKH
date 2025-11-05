@@ -147,9 +147,6 @@ grid on;
 %% NMSE
 % z = results.z;
 % x_est = results.x_est;
-if size(z) ~= size(x_est(4,:))
-    x_est(4,:) = x_est(4,:)';
-end
 
 mse_ecg = mse(z,x_est(4,:));
 peak_val = max(abs(z));
@@ -170,11 +167,6 @@ global R N L M rho
 global a1 a2 a3     
 global C
 global sigma_L rho_L beta_L
-
-%Input signal z(t) từ CS
-% load z_norm
-% idx = min(max(round(t),1), numel(z_norm));
-% z   = z_norm(idx);
 
 load y_ECGv2
 y_cp = y_ecg_cp';
@@ -212,107 +204,107 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % Nonlinear injection
-% k1 = 0.8;
-% k2 = 1.5;
-% alpha = 0.3;
-% beta  = 1.5;
-% 
-% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-%          -k2 .* sign(e) .* abs(e).^beta;
-% G_nl = 0.01 * ones(size(L,1), size(C,1));
-% nonlinear_injection = G_nl * phi_nl;
-% 
-% % Linear injection
-%  G_l = 0.01 * eye(size(L,1), size(C,1));
-%  linear_injection = - G_l * e;
-%  injection = linear_injection + nonlinear_injection;
+k1 = 3.5;
+k2 = 2.6;
+alpha = 0.3;
+beta  = 2.4;
+
+phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+         -k2 .* sign(e) .* abs(e).^beta;
+G_nl = 0.01 * ones(size(L,1), size(C,1));
+nonlinear_injection = G_nl * phi_nl;
+ 
+% Linear injection
+ G_l = 0.01 * eye(size(L,1), size(C,1));
+ linear_injection = - G_l * e;
+ injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*sign(e));
+        L * (y + rho*tanh(30*e)) + injection;
 
 dxdt = [dxdt1; dxdt2];
 end
 
 %% Result
-% results = struct;
-% 
-% % --- Time and states ---
-% results.t         = t;                  % time vector
-% results.x         = x;                  % true states [x1, x2, x3, z]
-% results.x_est     = x_est;              % estimated states
-% results.z         = z;                  % true transmitted signal
-% results.error_z   = error_z;            % error dynamics of z
-% results.NMSE      = nmse_ecg;               % NMSE value
-% results.x0        = x0;                 % initial condition
-% 
-% % --- System parameters ---
-% results.sigma_L   = sigma_L;            % Lorenz sigma
-% results.rho_L     = rho_L;              % Lorenz rho
-% results.beta_L    = beta_L;             % Lorenz beta
-% results.a1        = a1;                 % system input coeff a1
-% results.a2        = a2;                 % system input coeff a2
-% results.a3        = a3;                 % system input coeff a3
-% % 
-% % % --- Observer matrices ---
-% results.C         = C;                  % observer output matrix
-% results.L         = L;                  % SMO gain matrix
-% results.rho       = rho;                % SMO tanh gain
-% results.N         = N;                  % N matrix
-% results.M         = M;                  % M matrix
-% results.R         = R;                  % R matrix
-% results.Ahat      = Ahat;               % canonical A
-% results.Ehat      = Ehat;               % canonical E
-% results.Eigenvalue = Eigenvalue;        % eigenvalues of N
-% % 
-% % % k1 = 0.8;
-% % % k2 = 1.5;
-% % % alpha = 0.3;
-% % % beta  = 1.5;
-% % % G_nl = 0.01 * ones(size(L,1), size(C,1));
-% % % G_l = 0.01 * eye(size(L,1), size(C,1));
-% % 
-% % % --- Injection parameters ---
-% % % results.k1        = k1;                 % nonlinear injection gain 1
-% % % results.k2        = k2;                 % nonlinear injection gain 2
-% % % results.alpha     = alpha;              % nonlinear injection exponent alpha
-% % % results.beta      = beta;               % nonlinear injection exponent beta
-% % % results.G_nl      = G_nl;               % nonlinear injection matrix
-% % % results.G_l       = G_l;                % linear injection matrix
-% % 
-% % % --- Additional info ---
-% results.rank_a    = rank_a;             % rank condition (a)
-% results.rank_obsv = rank_obsv;          % rank of observability matrix
-% results.cond_C    = cond_C;             % condition number of C
-% % 
-% % % Save to .mat file
-% % % save('D:\NCKH\Github\NCKH\Lorenz\Result\ECG_results_v2.mat','results');
-% save('D:\Thungan\Github\NCKH\Lorenz\Result\ECG_results_v3.mat','results');
-% 
-% %% Save load data
-% plotData = struct;
-% 
-% % --- Time and signals ---
-% plotData.t       = t;                  % thời gian
-% plotData.x_true  = x;                  % trạng thái gốc [x1,x2,x3,z]
-% plotData.x_est   = x_est;              % trạng thái ước lượng
-% plotData.z       = z;                  % tín hiệu truyền
-% plotData.error_z = error_z;            % sai số z
-% 
-% % --- Metrics ---
-% plotData.NMSE    = nmse_ecg;               % chỉ số NMSE
-% % 
-% % --- Parameters (optional) ---
-% plotData.x0      = x0;                 
-% plotData.sigma_L = sigma_L;            
-% plotData.rho_L   = rho_L;              
-% plotData.beta_L  = beta_L;  
-% plotData.rho     = rho; 
-% % plotData.k1      = k1;                 
-% % plotData.k2      = k2;                 
-% % plotData.alpha   = alpha;              
-% % plotData.beta    = beta;               
-% 
-% % 
-% % save('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\ECG_v2.mat','plotData');
-% save('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\ECG_v3.mat','plotData');
+results = struct;
+% --- Time and states ---
+results.t         = t;                 
+results.x         = x;                 
+results.x_est     = x_est;             
+results.z         = z;                
+% results.error_z   = error_z;            
+results.MSE      = mse_ecg;             
+results.PSNR     = peaksnr_ecg;
+results.SNR      = snr_ecg;
+results.reconstruct = recon;
+results.x0        = x0;              
+
+% --- System parameters ---
+results.sigma_L   = sigma_L;          
+results.rho_L     = rho_L;             
+results.beta_L    = beta_L;           
+results.a1        = a1;                 
+results.a2        = a2;                
+results.a3        = a3;               
+
+% --- Observer matrices ---
+results.C         = C;                
+results.L         = L;                
+results.rho       = rho;              
+results.N         = N;                
+results.M         = M;                 
+results.R         = R;                 
+results.Ahat      = Ahat;              
+results.Ehat      = Ehat;              
+results.Eigenvalue = Eigenvalue;      
+
+k1 = 3.5;
+k2 = 2.6;
+alpha = 0.3;
+beta  = 2.4;
+G_nl = 0.01 * ones(size(L,1), size(C,1));
+G_l = 0.01 * eye(size(L,1), size(C,1));
+
+% --- Injection parameters ---
+results.k1        = k1;                
+results.k2        = k2;                
+results.alpha     = alpha;            
+results.beta      = beta;               
+results.G_nl      = G_nl;              
+results.G_l       = G_l;
+% --- Additional info ---
+results.rank_a    = rank_a;             
+results.rank_obsv = rank_obsv;         
+results.cond_C    = cond_C;             
+
+% Save to .mat file
+% save('D:\NCKH\Github\NCKH\Lorenz\Result\ECG_results_4_11.mat','results');
+save('D:\Thungan\Github\NCKH\Lorenz\Result\ECG_results_4_11.mat','results');
+
+%% Save load data
+plotData = struct;
+
+% --- Time and signals ---
+plotData.t       = t;                  
+plotData.x_true  = x;                 
+plotData.x_est   = x_est;            
+plotData.z       = z;                 
+% plotData.error_z = error_z;           
+
+% --- Metrics ---
+plotData.MSE    = nmse_ecg;              
+
+% --- Parameters (optional) ---
+plotData.x0      = x0;                 
+plotData.sigma_L = sigma_L;            
+plotData.rho_L   = rho_L;              
+plotData.beta_L  = beta_L;  
+plotData.rho     = rho; 
+plotData.k1      = k1;                 
+plotData.k2      = k2;                 
+plotData.alpha   = alpha;              
+plotData.beta    = beta;               
+
+% save('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\ECG_4_11.mat','plotData');
+save('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\ECG_4_11.mat','plotData');

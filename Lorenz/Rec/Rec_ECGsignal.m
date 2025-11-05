@@ -8,7 +8,7 @@ N=1000;
 load D:\Thungan\Github\NCKH\Lorenz\Obs\y_ECGv1.mat
 % load x_estimate.mat
 % load D:\NCKH\Github\NCKH\Lorenz\Result\ECG_results_v1.mat
-load D:\Thungan\Github\NCKH\Lorenz\Result\ECG_results_v1.mat
+load D:\Thungan\Github\NCKH\Lorenz\Result\ECG_results_4_11.mat
 load D:\Thungan\Github\NCKH\Lorenz\Obs\ecgsig.mat
 x_ecg=ecgsig(1:N,1);
 y_new = results.x_est(4,:)';
@@ -51,10 +51,3 @@ fprintf('PSNR (Correct): %.4f dB\n', peaksnr);
 fprintf('SNR: %.4f dB\n', snr);
 format long
 fprintf('Correlation Coefficient: %f\n', CC);
-
-figure;
-plot(SNR_values, PSNR_values, '-o','LineWidth',1.5);
-xlabel('SNR (dB)'); ylabel('PSNR (dB)');
-title('PSNR–SNR Relationship Across Signals');
-grid on;
-legend('Sine','Sparse','Audio','ECG','Image');
