@@ -17,7 +17,7 @@ L=round(length(audio_new)/N);
 % sound(audioSignal,Fs); % for listening the sound 
 
 psi=dctmtx(N); % sparsitying transform for ECG signals 
-x_transform = psi*audioSignal(1:N,1);
+% x_transform = psi*audioSignal(1:N,1);
 
 %% Find out the minimum value of K
 % K=60; % sparsity of signal
@@ -30,7 +30,7 @@ phi=randi([0 1],M,N); %bernoulli
 phi(phi==0)=-1;
 x1 = zeros(N,1);
 for i=1:L
-x1=audio_new(1+(i-1)*N:N*i,1); % taking a block of signal 
+x1=audio_new(1+(i-1)*N:N*i,1);
 y1 = phi*x1;
 y_cs(:,i) = y1;
 end

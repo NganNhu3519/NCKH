@@ -26,7 +26,8 @@ phi(phi==0)=-1;
 %% Sensing using CS 
 y = phi*x_in;
 y_cp =y;
-save('y_measurement.mat','phi','y_cp')
+% save('y_sine.mat','phi','y_cp')
+
 % Theta1 = phi*psi';
 % s21 = pinv(Theta1)*y;
 % s1 = l1eq_pd(s21,Theta1,Theta1',y,5e-3,20); % L1-magic toolbox
@@ -37,4 +38,3 @@ save('y_measurement.mat','phi','y_cp')
 % mse1 = mse(x,x1);
 % disp('ECG signal')
 % fprintf('MSE of Ber: %d \n',mse1)
-

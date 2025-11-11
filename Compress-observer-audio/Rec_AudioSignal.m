@@ -19,7 +19,7 @@ N = 1000;
 
 load y_measurement.mat
 load x_est.mat
-y_new = results.x_est(4,:)';
+y_new = x_est(4,:)';
 M = length(y_new)/L;  % length of y new
 Theta = phi*psi';
 for i=1 : L
@@ -43,7 +43,7 @@ subplot(211),plot(y_cp,'b.','MarkerSize',10);legend('Compressed & encrypted sign
 subplot(212),plot(audio_new,'LineWidth',2); hold on; plot(x_rec, 'r.','MarkerSize',10);...
     legend('Original', 'Recovered');xlabel('(b)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);...
 sgtitle('ECG signal - Compressed \& Encrypted Signal','Interpreter','latex','FontSize',20)
-mse1 = mse(audio_new,x1);
+mse1 = mse(audio_new,x1(:));
 disp('Audio signal')
 fprintf('MSE of Audio: %d \n',mse1)
  
@@ -53,3 +53,15 @@ fprintf('MSE of Audio: %d \n',mse1)
 % sound((x_est(3,:))',Fs);    % compress-encrypted audio
 % pause(3)
 % sound(x_rec,Fs);            % reconstructed audio
+
+peak_val = max(abs(audio_new));
+[peaksnr, snr] = psnr(x1(:), audio_new, peak_val);
+R = corrcoef(audio_new, x1);
+CC = R(1,2);
+
+% fprintf('Reconstruction time: %.6f seconds\n', recon);
+% fprintf('MSE of Ber: %d \n',mse1)
+fprintf('PSNR (Correct): %.4f dB\n', peaksnr);
+fprintf('SNR: %.4f dB\n', snr);
+format long
+fprintf('Correlation Coefficient: %f\n', CC);
