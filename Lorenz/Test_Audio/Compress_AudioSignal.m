@@ -16,18 +16,17 @@ end
 L=round(length(audio_new)/N);
 % sound(audioSignal,Fs); % for listening the sound 
 
-psi=dctmtx(N); % sparsitying transform for ECG signals 
-% x_transform = psi*audioSignal(1:N,1);
+psi=dctmtx(N);
+x_transform = psi*audioSignal(1:N,1);
 
 %% Find out the minimum value of K
-% K=60; % sparsity of signal
-% %K=length(find(abs(x_transform)>.05));
-% M=6*K; % the number of measurements 
-M =400;
+M = 600;
 y_cs = zeros(M,L);
+
 %% Sensing matrix construction
 phi=randi([0 1],M,N); %bernoulli
 phi(phi==0)=-1;
+
 x1 = zeros(N,1);
 for i=1:L
 x1=audio_new(1+(i-1)*N:N*i,1);
@@ -35,6 +34,13 @@ y1 = phi*x1;
 y_cs(:,i) = y1;
 end
 
+% for i=1:L
+% x1=audio_new(1+(i-1)*N:N*i,1);
+% x_transform = psi*x1;
+% y1 = phi*x_transform;
+% y_cs(:,i) = y1;
+% end
+
 %Save file
 y_cp = y_cs(:);
-% save('y_Audio_4_11.mat','phi','y_cp','psi')
+save('y_Audio.mat','phi','y_cp','psi')
