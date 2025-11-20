@@ -1,30 +1,24 @@
-% Audio Signal 
-% Author: Uyen L.P. Nguyen 
-% Date: Sept 2024
-
 close all;clear all; clc;
-%% Define parameters
-N = 1000; % signal length
+
+N = 1000;
 load gong.mat
 y_audio = y(1:40000);
 
 audioSignal=y_audio;
 audio_new = zeros(40000/4,1);
 for k=1:(10000)
-    audio_new(k) = audioSignal(k*4);
+    audio_new(k) = audioSignal(k*4); %Downsampling by a factor of 4
 end
 L=round(length(audio_new)/N);
-% sound(audioSignal,Fs); % for listening the sound 
 
 psi=dctmtx(N);
 x_transform = psi*audioSignal(1:N,1);
 
-%% Find out the minimum value of K
 M = 600;
 y_cs = zeros(M,L);
 
 %% Sensing matrix construction
-phi=randi([0 1],M,N); %bernoulli
+phi=randi([0 1],M,N);
 phi(phi==0)=-1;
 
 x1 = zeros(N,1);

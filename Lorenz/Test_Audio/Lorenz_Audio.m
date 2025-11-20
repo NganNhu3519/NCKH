@@ -89,12 +89,11 @@ M = Mtau';   % xhat = x_obs + M*y
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
  % tspan = 0.01:0.01:40; 
-tspan = 0.1:0.1:60; 
+tspan = 0.01:0.01:60; 
 
 options = odeset('RelTol',1e-4,'AbsTol',1e-4); 
-tic
-[t, x] = ode45(@lorenz_smo, tspan, x0, options)
-t
+tic;
+[t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
 [~, y, x_est, z] = lorenz_smo(t', x');
 %save('x_est.mat','x_est');
@@ -162,9 +161,9 @@ global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-load y.mat
+load y_Audio.mat
 y_cp=y_cp';
-z = y_cp(uint16(10*t));
+z = y_cp(uint16(100*t));
 
 % Lorenz
 x1 = x(1,:); 
@@ -197,25 +196,25 @@ fh1 = sigma_L * (xh2 - xh1);
 fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
-% Nonlinear injection
-k1 = 3.5;
-k2 = 2.5;
-alpha = 0.3;
-beta  = 2.4;
-
-phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-         -k2 .* sign(e) .* abs(e).^beta;
-G_nl = 0.01 * ones(size(L,1), size(C,1));
-nonlinear_injection = G_nl * phi_nl;
-
-%Linear injection
- G_l = 0.01 * eye(size(L,1), size(C,1));
- linear_injection = - G_l * e;
- injection = linear_injection + nonlinear_injection;
+% % Nonlinear injection
+% k1 = 3.5;
+% k2 = 2.5;
+% alpha = 0.4;
+% beta  = 2.5;
+% 
+% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+%          -k2 .* sign(e) .* abs(e).^beta;
+% G_nl = 0.01 * ones(size(L,1), size(C,1));
+% nonlinear_injection = G_nl * phi_nl;
+% 
+% %Linear injection
+%  G_l = 0.01 * eye(size(L,1), size(C,1));
+%  linear_injection = - G_l * e;
+%  injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(50*e)) + injection;
+        L * (y + rho*tanh(70*e));
 
 dxdt = [dxdt1; dxdt2];
 end

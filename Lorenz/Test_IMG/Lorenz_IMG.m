@@ -87,11 +87,16 @@ disp(Eigenvalue);
 Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';   % xhat = x_obs + M*y
 
+%% Load input
+global y_cp
+load y_img.mat
+y_cp = y_cp';
+
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 0.01:0.01:40; 
+tspan = 0.01:0.01:1; 
 
-options = odeset('RelTol',1e-6,'AbsTol',1e-6);
+options = odeset('RelTol',1e-3,'AbsTol',1e-3, 'OutputFcn', @odeProgress);
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
@@ -139,18 +144,18 @@ title('IMG Error dynamics of z');
 grid on;
 
 %% NMSE
-% mse_img = mse(z,x_est(4,:));
-% peak_val = max(abs(z));
-% [peaksnr_img, snr_img] = psnr(x_est(4,:), z, peak_val);
-% R = corrcoef(z, x_est(4,:));
-% CC = R(1,2);
-% 
-% fprintf('Reconstruction time: %.6f seconds\n', recon);
-% fprintf('MSE of Ber: %d \n',mse_img)
-% fprintf('PSNR (Correct): %.4f dB\n', peaksnr_img);
-% fprintf('SNR: %.4f dB\n', snr_img);
-% format long
-% fprintf('Correlation Coefficient: %f\n', CC);
+mse_img = mse(z,x_est(4,:));
+peak_val = max(abs(z));
+[peaksnr_img, snr_img] = psnr(x_est(4,:), z, peak_val);
+R = corrcoef(z, x_est(4,:));
+CC = R(1,2);
+
+fprintf('Reconstruction time: %.6f seconds\n', recon);
+fprintf('MSE of Ber: %d \n',mse_img)
+fprintf('PSNR (Correct): %.4f dB\n', peaksnr_img);
+fprintf('SNR: %.4f dB\n', snr_img);
+format long
+fprintf('Correlation Coefficient: %f\n', CC);
 
 %% Sliding Mode Observer Function (Lorenz) =====
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)
@@ -159,13 +164,13 @@ global a1 a2 a3
 global C
 global sigma_L rho_L beta_L
 global G_nl G_l
+global y_cp z
 
-%Input signal z(t) từ CS
-load y_img.mat
-y_cp=y_cp';
+% load y_img.mat
+% y_cp=y_cp';
 z = y_cp(uint16(100*t));
 
-% Lorenz plant dynamics (f(x) + B z)
+% Lorenz
 x1 = x(1,:); 
 x2 = x(2,:); 
 x3 = x(3,:);
@@ -196,106 +201,42 @@ fh1 = sigma_L * (xh2 - xh1);
 fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
-% Nonlinear injection
-k1    = 0.8;
-k2    = 1.5;
-alpha = 0.3;
-beta  = 1.5; 
-
-phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-         -k2 .* sign(e) .* abs(e).^beta;
-G_nl = 0.01 * ones(size(L,1), size(C,1));
-nonlinear_injection = G_nl * phi_nl;
-
-% Linear injection
-G_l = 0.01 * eye(size(L,1), size(C,1));
- linear_injection = - G_l * e;
- injection = linear_injection + nonlinear_injection;
+% % Nonlinear injection
+% k1    = 0.8;
+% k2    = 1.5;
+% alpha = 1.3;
+% beta  = 1.5; 
+% 
+% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+%          -k2 .* sign(e) .* abs(e).^beta;
+% G_nl = 0.01 * ones(size(L,1), size(C,1));
+% nonlinear_injection = G_nl * phi_nl;
+% 
+% % Linear injection
+% G_l = 0.01 * eye(size(L,1), size(C,1));
+%  linear_injection = - G_l * e;
+%  injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(50*e)) + injection ;
+        L * (y + rho*tanh(20*e));
 
 dxdt = [dxdt1; dxdt2];
 end
 
-%% Result
-% results = struct;
-% % % --- Time and states ---
-% results.t         = t;                  % time vector
-% results.x         = x;                  % true states [x1, x2, x3, z]
-% results.x_est     = x_est;              % estimated states
-% results.z         = z;                  % true transmitted signal
-% results.error_z   = error_z;            % error dynamics of z
-% results.NMSE      = nmse_img;               % NMSE value
-% results.x0        = x0;                 % initial condition
-% 
-% % --- System parameters ---
-% results.sigma_L   = sigma_L;            % Lorenz sigma
-% results.rho_L     = rho_L;              % Lorenz rho
-% results.beta_L    = beta_L;             % Lorenz beta
-% results.a1        = a1;                 % system input coeff a1
-% results.a2        = a2;                 % system input coeff a2
-% results.a3        = a3;                 % system input coeff a3
-% % 
-% % % --- Observer matrices ---
-% results.C         = C;                  % observer output matrix
-% results.L         = L;                  % SMO gain matrix
-% results.rho       = rho;                % SMO tanh gain
-% results.N         = N;                  % N matrix
-% results.M         = M;                  % M matrix
-% results.R         = R;                  % R matrix
-% results.Ahat      = Ahat;               % canonical A
-% results.Ehat      = Ehat;               % canonical E
-% results.Eigenvalue = Eigenvalue;        % eigenvalues of N
-% % % 
-% k1    = 0.8;
-% k2    = 1.5;
-% alpha = 0.3;
-% beta  = 1.5; 
-% G_nl = 0.01 * ones(size(L,1), size(C,1));
-% G_l = 0.01 * eye(size(L,1), size(C,1));
-% % 
-% % --- Injection parameters ---
-% results.k1        = k1;                 % nonlinear injection gain 1
-% results.k2        = k2;                 % nonlinear injection gain 2
-% results.alpha     = alpha;              % nonlinear injection exponent alpha
-% results.beta      = beta;               % nonlinear injection exponent beta
-% results.G_nl      = G_nl;               % nonlinear injection matrix
-% results.G_l       = G_l;                % linear injection matrix
-% % 
-% % % --- Additional info ---
-% results.rank_a    = rank_a;             % rank condition (a)
-% results.rank_obsv = rank_obsv;          % rank of observability matrix
-% results.cond_C    = cond_C;             % condition number of C
-% % % 
-% % % % Save to .mat file
-% % % save('D:\NCKH\Github\NCKH\Lorenz\Result\IMG_results_v1.mat','results');
-% save('D:\Thungan\Github\NCKH\Lorenz\Result\IMG_results_v2.mat','results');
-% 
-% %% Save load data
-% plotData = struct;
-% 
-% % --- Time and signals ---
-% plotData.t       = t;                  % thời gian
-% plotData.x_true  = x;                  % trạng thái gốc [x1,x2,x3,z]
-% plotData.x_est   = x_est;              % trạng thái ước lượng
-% plotData.z       = z;                  % tín hiệu truyền
-% plotData.error_z = error_z;            % sai số z
-% 
-% % --- Metrics ---
-% plotData.NMSE    = nmse_img;               % chỉ số NMSE
-% % 
-% % % % --- Parameters (optional) ---
-% plotData.x0      = x0;                 
-% plotData.sigma_L = sigma_L;            
-% plotData.rho_L   = rho_L;              
-% plotData.beta_L  = beta_L;  
-% plotData.rho     = rho;   
-% plotData.k1      = k1;                 
-% plotData.k2      = k2;                 
-% plotData.alpha   = alpha;              
-% plotData.beta    = beta;               
-% % 
-% % % save('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\IMG_v1.mat','plotData');
-% save('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\IMG_v2.mat','plotData');
+function status = odeProgress(t, ~, flag)
+persistent last_t
+
+if isempty(flag)
+    if isempty(last_t) || t(end) - last_t >= 0.01
+        fprintf('t = %.4f\n', t(end));
+        last_t = t(end);
+    end
+elseif strcmp(flag,'init')
+    last_t = [];
+elseif strcmp(flag,'done')
+    fprintf('Simulation finished.\n');
+end
+
+status = 0;
+end

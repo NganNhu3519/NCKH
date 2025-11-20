@@ -11,7 +11,7 @@ L = length(Img_arr)/N;
 psi=dctmtx(N);
 
 %% ___MEASUREMENT MATRIX___
-M = 400; 
+M = 600; 
 phi=randi([0 1],M,N); %bernoulli
 phi(phi==0)=-1;
 
