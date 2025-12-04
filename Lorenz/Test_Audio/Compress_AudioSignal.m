@@ -36,5 +36,6 @@ end
 % end
 
 %Save file
-y_cp = y_cs(:);
-save('y_Audio.mat','phi','y_cp','psi')
+% y_cp = y_cs(:);
+% save('y_Audio.mat','phi','y_cp','psi')
+save('y_Audio_cs.mat','phi','y_cs','psi')
