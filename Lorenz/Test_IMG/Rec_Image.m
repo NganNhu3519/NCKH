@@ -1,5 +1,3 @@
-% Author: Uyen L.P. Nguyen 
-% Date: Sept 2024
 % Reconstruct Img signal
 
 close all;clear all;clc;

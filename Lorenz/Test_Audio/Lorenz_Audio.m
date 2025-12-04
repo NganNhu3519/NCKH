@@ -88,15 +88,15 @@ M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
- % tspan = 0.01:0.01:40; 
-tspan = 0.01:0.01:60; 
+t_cs = linspace(0, 10, length(y_cp));
+z_interp = @(tt) interp1(t_cs, y_cp, tt, 'linear', 'extrap');
+tspan = 0.01:0.01:40; 
 
 options = odeset('RelTol',1e-4,'AbsTol',1e-4); 
 tic;
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
 [~, y, x_est, z] = lorenz_smo(t', x');
-%save('x_est.mat','x_est');
 
 %% Plotting the Results
 figure
@@ -163,7 +163,8 @@ global sigma_L rho_L beta_L
 %Input signal z(t) từ CS
 load y_Audio.mat
 y_cp=y_cp';
-z = y_cp(uint16(100*t));
+% z = y_cp(uint16(100*t));
+z = z_interp(t);
 
 % Lorenz
 x1 = x(1,:); 

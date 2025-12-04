@@ -1,3 +1,4 @@
+%Compress Sensing
 clear; close all; clc;
 
 N = 1000;
@@ -7,11 +8,13 @@ Img_org = imread('tire.tif');
 Img_org = Img_org([51:150],[51:150]);
 figure; imshow(Img_org)
 Img_arr = double(Img_org(:));
+Img_arr = (Img_arr - mean(Img_arr)) / std(Img_arr); %chuẩn hóa
+
 L = length(Img_arr)/N;
 psi=dctmtx(N);
 
 %% ___MEASUREMENT MATRIX___
-M = 600; 
+M = 400; 
 phi=randi([0 1],M,N); %bernoulli
 phi(phi==0)=-1;
 
