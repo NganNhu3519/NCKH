@@ -1,8 +1,8 @@
 close all; clear all; clc;
 
-% ===== Globals =====
+%Globals
 global a1 a2 a3 C                
-global R N L M rho L       
+global R N L M rho             
 global sigma_L rho_L beta_L        
 
 %% System Initialization
@@ -88,9 +88,8 @@ M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-t_cs = linspace(0, 10, length(y_cp));
-z_interp = @(tt) interp1(t_cs, y_cp, tt, 'linear', 'extrap');
-tspan = 0.01:0.01:40; 
+tspan = 0.01:0.01:40;
+
 options = odeset('RelTol',1e-4,'AbsTol',1e-4, 'OutputFcn', @odeProgress); 
 tic;
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
@@ -156,24 +155,15 @@ fprintf('Correlation Coefficient: %f\n', CC);
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)
 global R N L M rho
 global a1 a2 a3     
-global C L
+global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-% load y_Audio.mat
-% y_cp=y_cp';
+load y_A.mat
 % z = y_cp(uint16(100*t));
-
-persistent z_time Fs_z L;
-if isempty(z_time)
-    load y_Audio.mat
-    z_frame = sum(y_cs,1);
-    L = length(z_frame);
-    Fs_z = 100;
-    t_dis = (0:L-1)/Fs_z;
-    z_time = @(t) interp1(t_dis, z_frame, t, 'linear', 'extrap');
-end
-z = z_time(t);
+k = max(1, min(round(t * Fs_new), length(y_cp)));
+z = y_cp(k);
+z = z(1,1);
 
 % Lorenz
 x1 = x(1,:); 
@@ -224,8 +214,7 @@ fh3 = xh1 .* xh2 - beta_L * xh3;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(70*e));
-
+        L * (y + rho*tanh(50*e));
 dxdt = [dxdt1; dxdt2];
 end
 

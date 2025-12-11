@@ -26,5 +26,8 @@ y1 = phi*x_cp;
 y_cs(:,i) = y1;
 end
 
-y_cp = y_cs(:);
-save('y_img.mat','phi','y_cp','psi')
+% y_cp = y_cs(:);
+y_cp = reshape(y_cs',[],1);
+y_cp = smoothdata(y_cp,'movmean',5);
+
+save('y_i.mat','phi','y_cp','psi');

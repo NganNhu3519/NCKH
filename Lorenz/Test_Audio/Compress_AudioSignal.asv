@@ -4,7 +4,7 @@ N = 1000;
 load gong.mat
 y_audio = y(1:40000);
 
-audioSignal = y_audio;
+audioSignal=y_audio;
 audio_new = zeros(40000/4,1);
 for k=1:(10000)
     audio_new(k) = audioSignal(k*4); %Downsampling by a factor of 4

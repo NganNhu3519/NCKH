@@ -76,7 +76,7 @@ rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 0.2 * pinv(C);
+L = 1.8 * pinv(C);
 rho = 10.0;
 
 % N và M
@@ -89,13 +89,13 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
-load y_img.mat
+load y_i.mat
 y_cp = y_cp';
 t_cs = linspace(0, 10, length(y_cp));
 z_interp = @(tt) interp1(t_cs, y_cp, tt, 'linear', 'extrap');
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 % tspan = 0.01:0.01:10; 
-tspan = 0:0.005:10;
+tspan = 0.01:0.01:40;
 
 options = odeset('RelTol',1e-4,'AbsTol',1e-4, 'OutputFcn', @odeProgress);
 tic
@@ -164,10 +164,9 @@ global R N L M rho
 global a1 a2 a3     
 global C
 global sigma_L rho_L beta_L
-global G_nl G_l
-global z_interp
+global z_interp y_cp
 
-% load y_img.mat
+% load y_i.mat
 % y_cp=y_cp';
 % z = y_cp(uint16(100*t));
 z = z_interp(t);
@@ -231,7 +230,7 @@ function status = odeProgress(t, ~, flag)
 persistent last_t
 
 if isempty(flag)
-    if isempty(last_t) || t(end) - last_t >= 0.005
+    if isempty(last_t) || t(end) - last_t >= 0.01
         fprintf('t = %.4f\n', t(end));
         last_t = t(end);
     end
