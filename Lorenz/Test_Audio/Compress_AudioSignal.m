@@ -14,7 +14,7 @@ L=round(length(audio_new)/N);
 psi=dctmtx(N);
 x_transform = psi*audioSignal(1:N,1);
 
-M = 400;
+M = 700;
 y_cs = zeros(M,L);
 
 %% Sensing matrix construction
@@ -30,4 +30,4 @@ end
 
 %Save file
 y_cp = y_cs(:);
-% save('y_Audio.mat','phi','y_cp','psi')
+save('y_Audio_700.mat','phi','y_cp','psi')

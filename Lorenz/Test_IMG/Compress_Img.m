@@ -28,6 +28,7 @@ end
 
 % y_cp = y_cs(:);
 y_cp = reshape(y_cs',[],1);
-y_cp = smoothdata(y_cp,'movmean',5);
+y_cp = smoothdata(y_cp,'movmean',15);
+y_cp = smoothdata(y_cp, 'sgolay', 31);
 
 save('y_i.mat','phi','y_cp','psi');

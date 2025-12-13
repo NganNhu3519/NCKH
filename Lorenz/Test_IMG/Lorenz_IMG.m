@@ -1,10 +1,9 @@
 close all; clear all; clc;
 
-% ===== Globals =====
+%Globals
 global a1 a2 a3 C                
 global R N L M rho             
 global sigma_L rho_L beta_L    
-global z_interp y_cp
 
 %% System Initialization
 % Lorenz parameters
@@ -12,9 +11,9 @@ sigma_L = 10;          % sigma
 rho_L   = 28;          
 beta_L  = 8/3;         % beta
           
-a1 = 1;
-a2 = 1;
-a3 = 2;
+a1 = 0.1;
+a2 = 0.1;
+a3 = 0.2;
 
 % System matrices
 E = [1,0,0,0;
@@ -76,8 +75,8 @@ rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 1.8 * pinv(C);
-rho = 10.0;
+L = 5.0 * pinv(C);
+rho = 8.0;
 
 % N và M
 N = Ahat - L * C;
@@ -90,14 +89,18 @@ M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
 load y_i.mat
-y_cp = y_cp';
-t_cs = linspace(0, 10, length(y_cp));
-z_interp = @(tt) interp1(t_cs, y_cp, tt, 'linear', 'extrap');
-x0 = [.1, .1, .1, 0, 0, 0, 0];
-% tspan = 0.01:0.01:10; 
-tspan = 0.01:0.01:40;
+y_cp = y_cp(:);
+T_final = 40;
+t_cs = linspace(0, T_final, length(y_cp));
+g = fspecial('gaussian',[31 1],5);
+y_cp_smooth = conv(y_cp, g(:), 'same');
+global z_interp
+z_interp = @(tt) interp1(t_cs, y_cp_smooth, tt, 'linear', 'extrap');
 
-options = odeset('RelTol',1e-4,'AbsTol',1e-4, 'OutputFcn', @odeProgress);
+x0 = [.1, .1, .1, 0, 0, 0, 0];
+tspan = 0.01:0.01:T_final;
+
+options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
@@ -164,11 +167,12 @@ global R N L M rho
 global a1 a2 a3     
 global C
 global sigma_L rho_L beta_L
-global z_interp y_cp
+global z_interp
 
 % load y_i.mat
 % y_cp=y_cp';
 % z = y_cp(uint16(100*t));
+
 z = z_interp(t);
 
 % Lorenz
@@ -214,13 +218,13 @@ fh3 = xh1 .* xh2 - beta_L * xh3;
 % nonlinear_injection = G_nl * phi_nl;
 
 % Linear injection
-G_l = 0.003 * eye(size(L,1), size(C,1));
+G_l = 0.01 * eye(size(L,1), size(C,1));
 linear_injection = - G_l * e;
 % injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(10*e)) + linear_injection;
+        L * (y + rho*tanh(5*e)) + linear_injection;
 
 dxdt = [dxdt1; dxdt2];
 end
@@ -242,3 +246,6 @@ end
 
 status = 0;
 end
+
+%%
+save("img_result.mat");

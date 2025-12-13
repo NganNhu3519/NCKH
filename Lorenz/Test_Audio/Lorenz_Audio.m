@@ -88,7 +88,7 @@ M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 0.01:0.01:40;
+tspan = 0.01:0.01:70;
 
 options = odeset('RelTol',1e-4,'AbsTol',1e-4, 'OutputFcn', @odeProgress); 
 tic;
@@ -159,7 +159,7 @@ global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-load y_Audio.mat
+load y_Audio_700.mat
 y_cp=y_cp';
 z = y_cp(uint16(100*t));
 
@@ -212,7 +212,7 @@ fh3 = xh1 .* xh2 - beta_L * xh3;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(80*e));
+        L * (y + rho*tanh(80*e)) + linear_injection;
 dxdt = [dxdt1; dxdt2];
 end
 
@@ -233,3 +233,6 @@ end
 
 status = 0;
 end
+
+%%
+save("Audio_700.mat");
