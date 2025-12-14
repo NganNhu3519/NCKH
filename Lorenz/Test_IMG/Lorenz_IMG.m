@@ -11,9 +11,9 @@ sigma_L = 10;          % sigma
 rho_L   = 28;          
 beta_L  = 8/3;         % beta
           
-a1 = 0.1;
-a2 = 0.1;
-a3 = 0.2;
+a1 = 0.05; 
+a2 = 0.05; 
+a3 = 0.10;
 
 % System matrices
 E = [1,0,0,0;
@@ -100,7 +100,7 @@ z_interp = @(tt) interp1(t_cs, y_cp_smooth, tt, 'linear', 'extrap');
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 tspan = 0.01:0.01:T_final;
 
-options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
+options = odeset('RelTol',1e-4,'AbsTol',1e-4, 'OutputFcn', @odeProgress);
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
@@ -207,24 +207,25 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % % Nonlinear injection
-% k1    = 0.8;
-% k2    = 1.5;
-% alpha = 1.3;
-% beta  = 1.5; 
-% 
-% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-%          -k2 .* sign(e) .* abs(e).^beta;
-% G_nl = 0.01 * ones(size(L,1), size(C,1));
-% nonlinear_injection = G_nl * phi_nl;
+k1    = 0.3;
+k2    = 0.6;
+alpha = 1.1;
+beta  = 1.3; 
+
+phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+         -k2 .* sign(e) .* abs(e).^beta;
+G_nl = 0.005 * ones(size(L,1), size(C,1));
+nonlinear_injection = G_nl * phi_nl;
 
 % Linear injection
-G_l = 0.01 * eye(size(L,1), size(C,1));
+G_l = 0.02 * eye(size(L,1), size(C,1));
 linear_injection = - G_l * e;
-% injection = linear_injection + nonlinear_injection;
+injection = linear_injection + nonlinear_injection;
+e_sat = max(min(e, 0.4), -0.4);
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(5*e)) + linear_injection;
+        L * (y + rho*tanh(2*e_sat)) + injection;
 
 dxdt = [dxdt1; dxdt2];
 end
@@ -248,4 +249,4 @@ status = 0;
 end
 
 %%
-save("img_result.mat");
+save("img_result1.mat");
