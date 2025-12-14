@@ -17,6 +17,7 @@ psi=dctmtx(N);
 M = 400; 
 phi=randi([0 1],M,N); %bernoulli
 phi(phi==0)=-1;
+phi = phi / sqrt(M);
 
 %% ___COMPRESSION___
 x_cp = zeros(N,1);
@@ -28,7 +29,12 @@ end
 
 % y_cp = y_cs(:);
 y_cp = reshape(y_cs',[],1);
-y_cp = smoothdata(y_cp,'movmean',15);
-y_cp = smoothdata(y_cp, 'sgolay', 31);
+% save('y_i.mat','phi','y_cp','psi');
 
-save('y_i.mat','phi','y_cp','psi');
+%% TEst
+mean(y_cp)
+std(y_cp)
+max(abs(y_cp))
+corrcoef(y_cs(:,1), y_cs(:,2))
+Theta = phi * psi';
+cond(Theta)
