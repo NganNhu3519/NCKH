@@ -11,8 +11,8 @@ sigma_L = 10;          % sigma
 rho_L   = 28;          
 beta_L  = 8/3;         % beta
           
-a1 = 1;
-a2 = 1;
+a1 = 2;
+a2 = 2;
 a3 = 1;
 
 % System matrices

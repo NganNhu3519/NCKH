@@ -11,9 +11,13 @@ sigma_L = 10;          % sigma
 rho_L   = 28;          
 beta_L  = 8/3;         % beta
           
-a1 = 0.05; 
-a2 = 0.05; 
-a3 = 0.10;
+% a1 = 1; 
+% a2 = 1; 
+% a3 = 1;
+
+a1 = 0.05;
+a2 = 0.05;
+a3 = 0.05;
 
 % System matrices
 E = [1,0,0,0;
@@ -25,9 +29,14 @@ A = [0,0,0,a1;
      0,0,0,a3];       
 
 %C = randi([0,3],3,4);
-C = [1 0 0 1;
-     0 1 0 1;
-     0 0 0.1 1];
+% C = [1 0 0 1;
+%      0 1 0 1;
+%      0 0 0.01 1];
+
+C = [1 0 0 0.5;
+     0 1 0 0.5;
+     0 0 0.1 0.5];
+
 cond_C = cond(C)
 
 r1 = rank(C);
@@ -75,8 +84,8 @@ rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 5.0 * pinv(C);
-rho = 6.0;
+L = 1.2 * pinv(C);
+rho = 5.0;
 
 % N và M
 N = Ahat - L * C;
@@ -88,26 +97,25 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
-load y_i.mat
-y_cp = y_cp(:);
-T_final = 40;
-t_cs = linspace(0, T_final, length(y_cp));
-global z_interp
-z_interp = @(tt) interp1(t_cs, y_cp, tt, 'linear', 'extrap');
-% z_interp = @(t) 0;
+% load y_32.mat
+% y_cp = y_cp(:);
+% y_cp = y_cp / max(abs(y_cp));
+% y_cp = smoothdata(y_cp,'gaussian',31);
+
+tspan = 0.01:0.01:4;
+% t_signal = tspan;
+
+% global z_interp
+% z_interp = @(tq) interp1(t_signal, y_cp, tq, 'linear', 0);
 
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 0.01:0.01:T_final;
 
 options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
 [~, y, x_est, z] = lorenz_smo(t', x');
-z_hat = y - C * [x_est(1,:); x_est(2,:); x_est(3,:); zeros(1,length(t))];
-std(C*[x_est(1,:); x_est(2,:); x_est(3,:); 0])
-std(z_hat)
-corrcoef(z_hat, y_cp(1:length(z_hat)))
+
 %% Plotting the Results
 figure
 subplot(2,2,1)
@@ -171,11 +179,11 @@ global C
 global sigma_L rho_L beta_L
 global z_interp
 
-% load y_i.mat
-% y_cp=y_cp';
-% z = y_cp(uint16(100*t));
+load y_32.mat
+y_cp=y_cp';
+z = y_cp(uint16(100*t));
 
-z = z_interp(t);
+% z = z_interp(t);
 
 % Lorenz
 x1 = x(1,:); 
@@ -186,12 +194,12 @@ f1 = sigma_L * (x2 - x1);
 f2 = x1 .* (rho_L - x3) - x2;                
 f3 = x1 .* x2 - beta_L * x3;                
 
-dxdt1 = [ f1;
-          f2;
-          f3 ];
+dxdt1 = [ f1 + a1*z;                          
+          f2 + a2*z;
+          f3 + a3*z ];
 
 % Output
-y = C * [x1; x2; x3; 0] + z;
+y = C * [x1; x2; x3; z];
 
 %Observer estimate
 xhat = [x(4,:); x(5,:); x(6,:); x(7,:)] + M * y;
@@ -209,25 +217,26 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % % Nonlinear injection
-k1    = 0.3;
-k2    = 0.6;
-alpha = 1.1;
-beta  = 1.3; 
+k1 = 1.5;
+k2 = 1.5;
+alpha = 0.3;
+beta  = 1.4;
 
-phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-         -k2 .* sign(e) .* abs(e).^beta;
-G_nl = 0.005 * ones(size(L,1), size(C,1));
+% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+%          -k2 .* sign(e) .* abs(e).^beta;
+phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
+         -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
+G_nl = 0.003 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
 
-% Linear injection
-G_l = 0.02 * eye(size(L,1), size(C,1));
-linear_injection = - G_l * e;
-injection = linear_injection + nonlinear_injection;
-e_sat = max(min(e, 0.4), -0.4);
+%Linear injection
+% G_l = 0.02 * eye(size(L,1), size(C,1));
+% linear_injection = - G_l * e;
+% injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(2*e_sat)) + injection;
+        L * (y + rho*tanh(5*e)) + nonlinear_injection;
 
 dxdt = [dxdt1; dxdt2];
 end
@@ -251,4 +260,4 @@ status = 0;
 end
 
 %%
-save("img_result1.mat");
+% save("img_result1.mat");
