@@ -13,7 +13,7 @@ beta_L  = 8/3;         % beta
           
 a1 = 1; 
 a2 = 1; 
-a3 = 1;
+a3 = 2;
 
 % System matrices
 E = [1,0,0,0;
@@ -24,10 +24,10 @@ A = [0,0,0,a1;
      0,0,0,a2;
      0,0,0,a3];       
 
-%C = randi([0,3],3,4);
-C = [1 0 0 1;
-     0 1 0 1;
-     0 0 0.1 1];
+C = [1 0 0 0;
+     0 1 0 0;
+     0 0 0.01 1];
+
 cond_C = cond(C)
 
 r1 = rank(C);
@@ -76,7 +76,7 @@ fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1))
 
 %% Sliding Mode Observer Design
 L = 1.2 * pinv(C);
-rho = 8.0;
+rho = 15.0;
 
 % N và M
 N = Ahat - L * C;
@@ -85,23 +85,11 @@ format short
 Eigenvalue = eig(N);
 disp(Eigenvalue);
 Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
-M = Mtau';   % xhat = x_obs + M*y
+M = Mtau';
 
 %% Simulation
-load y_32.mat
-y_cp = y_cp(:);
-scale_factor = max(abs(y_cp)); 
-y_cp = y_cp / scale_factor;
-dt_sample = 0.05; 
-T_final = length(y_cp) * dt_sample;
-t_signal = linspace(0, T_final, length(y_cp));
-
-global z_interp
-z_interp = @(t_query) interp1(t_signal, y_cp_scaled, t_query, 'previous', 0);
-
-x0 = [.1, .1, .1, 0, 0, 0, 0];
-% tspan = 0.01:0.01:T_final;
 tspan = 0.01:0.01:4;
+x0 = [.1, .1, .1, 0, 0, 0, 0];
 
 options = odeset('RelTol',1e-6,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
 tic
@@ -172,11 +160,11 @@ global C
 global sigma_L rho_L beta_L
 global z_interp
 
-% load y_32.mat
-% y_cp=y_cp';
-% z = y_cp(uint16(100*t));
+load y_32.mat
+y_cp=y_cp';
+z = y_cp(uint16(100*t));
 
-z = z_interp(t);
+% z = z_interp(t);
 
 % Lorenz
 x1 = x(1,:); 
@@ -210,44 +198,70 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % % Nonlinear injection
-k1    = 0.05;
-k2    = 0.1;
-alpha = 1.1;
-beta  = 1.3; 
+k1 = 1.5;
+k2 = 1.5;
+alpha = 0.3;
+beta  = 1.4;
 
-phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-         -k2 .* sign(e) .* abs(e).^beta;
+% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+%          -k2 .* sign(e) .* abs(e).^beta;
+phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
+         -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
 G_nl = 0.01 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
 
-% Linear injection
-G_l = 0.002 * eye(size(L,1), size(C,1));
-linear_injection = - G_l * e;
-injection = linear_injection + nonlinear_injection;
+%Linear injection
+% G_l = 0.02 * eye(size(L,1), size(C,1));
+% linear_injection = - G_l * e;
+% injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(3*e)) + injection;
+      + L*(y + rho*tanh(2*e)) + nonlinear_injection;
 
 dxdt = [dxdt1; dxdt2];
 end
 
 %% Đếm time
-function status = odeProgress(t, ~, flag)
-persistent last_t
-
-if isempty(flag)
-    if isempty(last_t) || t(end) - last_t >= 0.01
-        fprintf('t = %.4f\n', t(end));
-        last_t = t(end);
-    end
-elseif strcmp(flag,'init')
-    last_t = [];
-elseif strcmp(flag,'done')
-    fprintf('Simulation finished.\n');
-end
+% function status = odeProgress(t, ~, flag)
+% persistent last_t
+% 
+% if isempty(flag)
+%     if isempty(last_t) || t(end) - last_t >= 0.01
+%         fprintf('t = %.4f\n', t(end));
+%         last_t = t(end);
+%     end
+% elseif strcmp(flag,'init')
+%     last_t = [];
+% elseif strcmp(flag,'done')
+%     fprintf('Simulation finished.\n');
+% end
+% 
+% status = 0;
+% end
+function status = odeProgress(t, x, flag)
+persistent h1 h2
 
 status = 0;
+
+if strcmp(flag,'init')
+    figure(99); clf
+    h1 = plot(0,0,'b'); hold on
+    h2 = plot(0,0,'r--');
+    legend('z (truth)','ẑ (estimate)')
+    xlabel('time'); grid on
+
+elseif isempty(flag)
+    if ~isempty(t)
+        z     = x(7,end);   % state z
+        zhat  = x(4,end);   % estimated z
+        set(h1,'XData',[get(h1,'XData') t(end)],...
+               'YData',[get(h1,'YData') z]);
+        set(h2,'XData',[get(h2,'XData') t(end)],...
+               'YData',[get(h2,'YData') zhat]);
+        drawnow limitrate
+    end
+end
 end
 
 %%

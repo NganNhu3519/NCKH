@@ -49,14 +49,12 @@ R = P * [zeros(n1-m1,m1); R0];
 Ahat = R * A;
 Ehat = R * E;
 
-%% Check Ranking Conditions (Existence of Observer) =====
-n = size(A,2);  % số state = 4 (x1,x2,x3,z)
+%% Check Ranking Conditions (Existence of Observer)
+n = size(A,2);
 
-% (a) Impulse observability: rank([E;C]) = n ?
 rank_a = rank([E;C]);
 fprintf('Condition (a) rank([E;C]) = %d (need %d)\n', rank_a, n);
 
-% (b) Finite observability: rank([λE - A; C]) = n ?
 lambda_list = [0 1 10 1i 10i];
 cond_b = true;
 for lam = lambda_list
@@ -70,13 +68,12 @@ if cond_b
     fprintf('Condition (b) seems satisfied (all tested λ OK)\n');
 end
 
-% (c) Observability with canonical Ahat
 rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 1.2 * pinv(C);
-rho = 10.0;
+L = 2.0 * pinv(C);
+rho = 40;
 
 % N và M
 N = Ahat - L * C;
@@ -85,23 +82,13 @@ format short
 Eigenvalue = eig(N);
 disp(Eigenvalue);
 Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
-M = Mtau';   % xhat = x_obs + M*y
+M = Mtau';
 
 %% Simulation
-% load y_32.mat
-% y_cp = y_cp(:);
-% y_cp = y_cp / max(abs(y_cp));
-% y_cp = smoothdata(y_cp,'gaussian',31);
-
-tspan = 0.01:0.01:4;
-% t_signal = tspan;
-
-% global z_interp
-% z_interp = @(tq) interp1(t_signal, y_cp, tq, 'linear', 0);
-
+tspan = 0.01:0.01:12;
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
-options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
+options = odeset('RelTol',1e-6,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
@@ -168,13 +155,10 @@ global R N L M rho
 global a1 a2 a3     
 global C
 global sigma_L rho_L beta_L
-global z_interp
 
 load y_32.mat
 y_cp=y_cp';
 z = y_cp(uint16(100*t));
-
-% z = z_interp(t);
 
 % Lorenz
 x1 = x(1,:); 
@@ -210,14 +194,14 @@ fh3 = xh1 .* xh2 - beta_L * xh3;
 % % Nonlinear injection
 k1 = 1.5;
 k2 = 1.5;
-alpha = 0.3;
+alpha = 0.34;
 beta  = 1.4;
 
-% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-%          -k2 .* sign(e) .* abs(e).^beta;
-phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
-         -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
-G_nl = 0.01 * ones(size(L,1), size(C,1));
+phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+         -k2 .* sign(e) .* abs(e).^beta;
+% phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
+%          -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
+G_nl = 0.012 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
 
 %Linear injection
@@ -275,4 +259,4 @@ end
 end
 
 %%
-% save("img_result1.mat");
+save("img_32.mat",'x_est');
