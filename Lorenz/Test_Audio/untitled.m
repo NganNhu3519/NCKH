@@ -10,13 +10,12 @@ x = audio_new;
 x = (x - mean(x)) / std(x);
 N = length(x);
 psi = dctmtx(N);
-M = 400;
+M = 4000;
 phi = randi([0 1], M, N);
 phi(phi==0) = -1;
 phi = phi / sqrt(M);
 y_cp = phi * x;
 save('y_Audio_noblock.mat','phi','psi','y_cp')
-
 
 %% File 3
 close all; clear; clc;

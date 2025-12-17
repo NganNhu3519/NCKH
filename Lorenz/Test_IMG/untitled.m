@@ -11,14 +11,14 @@ x = (x - mean(x)) / std(x);
 N = length(x);
 psi = dctmtx(N);
 
-M = 400;
+M = 600;
 phi = randi([0 1], M, N);
 phi(phi==0) = -1;
 phi = phi / sqrt(M);
 
 y_cp = phi * x;
 
-save('y_img_noblock.mat','phi','psi','y_cp','Img');
+save('y_img_noblock_ver2.mat','phi','psi','y_cp','Img');
 
 %% File 3
 close all; clear; clc;
@@ -41,8 +41,12 @@ Img_hat = reshape(x_hat, size(Img));
 x_hat_dn = x_hat * std(x_true) + mean(x_true);
 
 figure;
-subplot(1,2,1); imshow(uint8(Img));
-subplot(1,2,2); imshow(uint8(mat2gray(Img_hat)*255));
+subplot(1,2,1);
+imshow(uint8(Img));
+title('Original image');
+subplot(1,2,2);
+imshow(uint8(mat2gray(Img_hat)*255));
+title('CS reconstructed image (no block-wise)');
 
 Img_arr = x_true;
 x_hat_v = x_hat_dn(:);
@@ -53,7 +57,6 @@ peak_val = max(abs(Img_arr));
 R1  = corrcoef(Img_arr, x_hat_v);
 CC1 = R1(1,2);
 
-fprintf('Raw:   MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB | CC=%.6f\n', ...
+fprintf('MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB | CC=%.6f\n', ...
         mse1, psnr1, snr1, CC1);
-
 

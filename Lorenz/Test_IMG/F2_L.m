@@ -73,7 +73,7 @@ fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1))
 
 %% Sliding Mode Observer Design
 L = 1.2 * pinv(C);
-rho = 8;
+rho = 40;
 
 % N và M
 N = Ahat - L * C;
@@ -156,7 +156,7 @@ global a1 a2 a3
 global C
 global sigma_L rho_L beta_L
 
-load y_img_noblock.mat
+load y_img_noblock_ver2.mat
 y_cp=y_cp';
 z = y_cp(uint16(100*t));
 
@@ -217,46 +217,47 @@ dxdt = [dxdt1; dxdt2];
 end
 
 %% Đếm time
-% function status = odeProgress(t, ~, flag)
-% persistent last_t
-% 
-% if isempty(flag)
-%     if isempty(last_t) || t(end) - last_t >= 0.01
-%         fprintf('t = %.4f\n', t(end));
-%         last_t = t(end);
-%     end
-% elseif strcmp(flag,'init')
-%     last_t = [];
-% elseif strcmp(flag,'done')
-%     fprintf('Simulation finished.\n');
-% end
-% 
-% status = 0;
-% end
-function status = odeProgress(t, x, flag)
-persistent h1 h2
+function status = odeProgress(t, ~, flag)
+persistent last_t
+
+if isempty(flag)
+    if isempty(last_t) || t(end) - last_t >= 0.01
+        fprintf('t = %.4f\n', t(end));
+        last_t = t(end);
+    end
+elseif strcmp(flag,'init')
+    last_t = [];
+elseif strcmp(flag,'done')
+    fprintf('Simulation finished.\n');
+end
 
 status = 0;
-
-if strcmp(flag,'init')
-    figure(99); clf
-    h1 = plot(0,0,'b'); hold on
-    h2 = plot(0,0,'r--');
-    legend('z (truth)','ẑ (estimate)')
-    xlabel('time'); grid on
-
-elseif isempty(flag)
-    if ~isempty(t)
-        z     = x(7,end);   % state z
-        zhat  = x(4,end);   % estimated z
-        set(h1,'XData',[get(h1,'XData') t(end)],...
-               'YData',[get(h1,'YData') z]);
-        set(h2,'XData',[get(h2,'XData') t(end)],...
-               'YData',[get(h2,'YData') zhat]);
-        drawnow limitrate
-    end
 end
-end
+% function status = odeProgress(t, x, flag)
+% persistent h1 h2
+% 
+% status = 0;
+% 
+% if strcmp(flag,'init')
+%     figure(99); clf
+%     h1 = plot(0,0,'b'); hold on
+%     h2 = plot(0,0,'r--');
+%     legend('z (truth)','ẑ (estimate)')
+%     xlabel('time'); grid on
+% 
+% elseif isempty(flag)
+%     if ~isempty(t)
+%         z     = x(7,end);   % state z
+%         zhat  = x(4,end);   % estimated z
+%         set(h1,'XData',[get(h1,'XData') t(end)],...
+%                'YData',[get(h1,'YData') z]);
+%         set(h2,'XData',[get(h2,'XData') t(end)],...
+%                'YData',[get(h2,'YData') zhat]);
+%         drawnow limitrate
+%     end
+% end
+% end
 
 %%
-save("img_noblock.mat",'x_est');
+save("img_noblock_ver2.mat",'x_est');
+save("img_0block_ver2.mat");

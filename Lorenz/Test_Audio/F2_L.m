@@ -195,24 +195,27 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % % Nonlinear injection
-% k1 = 3.5;
-% k2 = 2.5;
-% alpha = 0.4;
-% beta  = 2.5;
-% 
-% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-%          -k2 .* sign(e) .* abs(e).^beta;
-% G_nl = 0.01 * ones(size(L,1), size(C,1));
-% nonlinear_injection = G_nl * phi_nl;
-% 
-% %Linear injection
- G_l = 0.05 * eye(size(L,1), size(C,1));
- linear_injection = - G_l * e;
-%  injection = linear_injection + nonlinear_injection;
+k1 = 1.5;
+k2 = 1.5;
+alpha = 0.34;
+beta  = 1.4;
+
+phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+         -k2 .* sign(e) .* abs(e).^beta;
+% phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
+%          -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
+G_nl = 0.012 * ones(size(L,1), size(C,1));
+nonlinear_injection = G_nl * phi_nl;
+
+%Linear injection
+% G_l = 0.02 * eye(size(L,1), size(C,1));
+% linear_injection = - G_l * e;
+% injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(80*e)) + linear_injection;
+      + L*(y + rho*tanh(2*e)) + nonlinear_injection;
+
 dxdt = [dxdt1; dxdt2];
 end
 
@@ -235,4 +238,5 @@ status = 0;
 end
 
 %%
-save("Audio_700.mat");
+save("audio_noblock.mat",'x_est');
+save("audio_noblock_work.mat");
