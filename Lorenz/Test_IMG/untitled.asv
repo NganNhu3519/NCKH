@@ -1,0 +1,113 @@
+clc; clear;close all;
+%% File 1
+N = 100; 
+total_len = 400;
+L = total_len / N;
+n = (0:total_len-1)';
+
+Sig_org = ...
+    1.0 * sin(2*pi*3*n/total_len) + ...
+    0.8 * sin(2*pi*7*n/total_len) + ...
+    0.5 * sin(2*pi*15*n/total_len);
+Sig_org = double(Sig_org);
+Sig_arr = Sig_org(:);
+Sig_arr = (Sig_arr - mean(Sig_arr)) / std(Sig_arr);
+
+psi = dctmtx(N);
+M = 40;
+phi = randi([0 1], M, N);
+phi(phi==0) = -1;
+phi = phi / sqrt(M);
+y_cs = zeros(M, L);
+for i = 1:L
+    x_cp = Sig_arr(1+(i-1)*N : i*N);
+    y_cs(:,i) = phi * x_cp;
+end
+y_cp = reshape(y_cs.', [], 1);
+save('y_sine_400.mat', 'phi', 'psi', 'y_cp', 'Sig_org');
+figure;
+subplot(3,1,1);
+plot(Sig_org); grid on;
+title('Original sparse sine signal');
+
+subplot(3,1,2);
+stem(abs(psi * Sig_arr(1:N))); grid on;
+title('DCT coefficients of first block');
+
+subplot(3,1,3);
+plot(y_cp); grid on;
+title('Compressed measurements');
+
+%% File 2
+
+%%
+load y_32.mat      % y_cp
+load img_32.mat    % x_est
+
+y_new = x_est(4,:)';
+y_cp  = y_cp(:);
+
+% Metrics
+err_l2 = norm(y_new - y_cp) / norm(y_cp);
+cc     = corrcoef(y_cp, y_new); cc = cc(1,2);
+
+fprintf('Relative L2 error = %.3e\n', err_l2);
+fprintf('Correlation CC    = %.6f\n', cc);
+
+%%
+close all; clear; clc;
+
+N    = 256;
+imgH = 32;
+imgW = 32;
+
+Img_org = imread('cell.tif');
+Img_org = Img_org(1:imgH, 1:imgW);
+Img_org = double(Img_org);
+Img_arr = Img_org(:);
+
+load y_32.mat
+
+y_cp = y_cp(:);
+
+L = length(Img_arr) / N;
+M = length(y_cp) / L;
+
+fprintf('CS config: N=%d, M=%d, L=%d\n', N, M, L);
+
+Theta = phi * psi';
+
+x_rec_blocks = zeros(N, L);
+
+tic
+for i = 1:L
+    y_seg = y_cp((i-1)*M+1 : i*M);
+    s0 = pinv(Theta) * y_seg;
+    s_hat = l1eq_pd(s0, Theta, Theta', y_seg, 5e-3, 20);
+    x_rec_blocks(:, i) = psi' * s_hat;
+end
+recon_time = toc;
+
+x_rec = x_rec_blocks(:);
+x_hat = reshape(x_rec, imgW, imgH)';
+
+figure;
+subplot(1,2,1);
+imshow(uint8(Img_org));
+title('Original image');
+
+subplot(1,2,2);
+imshow(uint8(mat2gray(x_hat) * 255));
+title('CS reconstructed (Test 2.1)');
+
+x_hat_v = x_hat(:);
+
+mse_val = immse(x_hat_v, Img_arr);
+peak_val = max(abs(Img_arr));
+[psnr_val, snr_val] = psnr(x_hat_v, Img_arr, peak_val);
+CC = corrcoef(Img_arr, x_hat_v); 
+CC = CC(1,2);
+
+fprintf('Reconstruction time: %.4f s\n', recon_time);
+fprintf('MSE = %.3e | PSNR = %.2f dB | SNR = %.2f dB | CC = %.6f\n', ...
+        mse_val, psnr_val, snr_val, CC);

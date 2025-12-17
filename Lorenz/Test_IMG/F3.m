@@ -12,7 +12,8 @@ Img_arr = Img_org(:);
 load y_32.mat
 load img_32.mat
 
-y_new = x_est(4,:)';
+% y_new = x_est(4,:)';
+y_new = y_cp;
 L = length(Img_arr) / N;
 M = length(y_new) / L;
 

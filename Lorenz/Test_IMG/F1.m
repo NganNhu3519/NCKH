@@ -1,14 +1,9 @@
 % Compress Sensing (NO DC patch)
 clear; close all; clc;
 
-N = 256;
-
-%% Original image
-Img_org = imread('cell.tif');
-Img_org = Img_org(1:32, 1:32);
-figure; imshow(Img_org); title('Original image (32×32)');
-
-Img_arr = double(Img_org(:));
+imgH = 32; imgW = 32;
+Img = imread('cell.tif');
+Img = double(Img(1:imgH,1:imgW));
 
 % Global normalization (ONLY here)
 Img_arr = (Img_arr - mean(Img_arr)) / std(Img_arr);
@@ -17,7 +12,7 @@ L = length(Img_arr) / N;
 psi = dctmtx(N);
 
 %% Measurement matrix
-M = 300;
+M = 100;
 phi = randi([0 1], M, N);
 phi(phi==0) = -1;
 phi = phi / sqrt(M);
