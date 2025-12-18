@@ -1,21 +1,18 @@
 close all; clear all; clc;
 
-%Globals
 global a1 a2 a3 C                
 global R N L M rho             
 global sigma_L rho_L beta_L        
 
 %% System Initialization
-% Lorenz parameters
-sigma_L = 10;          % sigma
+sigma_L = 10;
 rho_L   = 28;          
-beta_L  = 8/3;         % beta
+beta_L  = 8/3;
           
 a1 = 1;
 a2 = 1;
 a3 = 2;
 
-% System matrices
 E = [1,0,0,0;
      0,1,0,0;
      0,0,1,0];    
@@ -24,7 +21,6 @@ A = [0,0,0,a1;
      0,0,0,a2;
      0,0,0,a3];       
 
-%C = randi([0,3],3,4);
 C = [1 0 0 0;
      0 1 0 0;
      0 0 0.01 1];
@@ -49,14 +45,12 @@ R = P * [zeros(n1-m1,m1); R0];
 Ahat = R * A;
 Ehat = R * E;
 
-%% Check Ranking Conditions (Existence of Observer) =====
+%% Check Existence of Observer
 n = size(A,2);  % số state = 4 (x1,x2,x3,z)
 
-% (a) Impulse observability: rank([E;C]) = n ?
 rank_a = rank([E;C]);
 fprintf('Condition (a) rank([E;C]) = %d (need %d)\n', rank_a, n);
 
-% (b) Finite observability: rank([λE - A; C]) = n ?
 lambda_list = [0 1 10 1i 10i];
 cond_b = true;
 for lam = lambda_list
@@ -70,7 +64,6 @@ if cond_b
     fprintf('Condition (b) seems satisfied (all tested λ OK)\n');
 end
 
-% (c) Observability with canonical Ahat
 rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
@@ -78,7 +71,6 @@ fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1))
 L = 1.2 * pinv(C);
 rho = 8.0;
 
-% N và M
 N = Ahat - L * C;
 format short
 
@@ -88,9 +80,9 @@ M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 0.01:0.01:70;
+tspan = 0.01:0.01:4;
 
-options = odeset('RelTol',1e-4,'AbsTol',1e-4, 'OutputFcn', @odeProgress); 
+options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress); 
 tic;
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
@@ -159,7 +151,7 @@ global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-load y_Audio_700.mat
+load y_Audio_noblock_ver1.mat
 y_cp=y_cp';
 z = y_cp(uint16(100*t));
 
@@ -185,7 +177,7 @@ xhat = [x(4,:); x(5,:); x(6,:); x(7,:)] + M * y;
 %Sliding error
 e = y - C * xhat;
 
-%Observer dynamics
+% Observer dynamics
 xh1 = xhat(1,:); 
 xh2 = xhat(2,:); 
 xh3 = xhat(3,:);
@@ -194,27 +186,20 @@ fh1 = sigma_L * (xh2 - xh1);
 fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
-% % Nonlinear injection
-k1 = 1.5;
+% Nonlinear injection
+k1 = 1.2;
 k2 = 1.5;
-alpha = 0.34;
+alpha = 0.4;
 beta  = 1.4;
 
-phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-         -k2 .* sign(e) .* abs(e).^beta;
-% phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
-%          -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
-G_nl = 0.012 * ones(size(L,1), size(C,1));
+phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
+         -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
+G_nl = 0.008 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
-
-%Linear injection
-% G_l = 0.02 * eye(size(L,1), size(C,1));
-% linear_injection = - G_l * e;
-% injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-      + L*(y + rho*tanh(2*e)) + nonlinear_injection;
+      + L*(y + rho*tanh(10*e)) + nonlinear_injection;
 
 dxdt = [dxdt1; dxdt2];
 end
@@ -224,7 +209,7 @@ function status = odeProgress(t, ~, flag)
 persistent last_t
 
 if isempty(flag)
-    if isempty(last_t) || t(end) - last_t >= 0.005
+    if isempty(last_t) || t(end) - last_t >= 0.01
         fprintf('t = %.4f\n', t(end));
         last_t = t(end);
     end
@@ -237,6 +222,41 @@ end
 status = 0;
 end
 
+% function status = odeProgress(t, x, flag)
+% persistent last_t hFig hAx h1 h2 idx
+% 
+% if strcmp(flag,'init')
+%     last_t = 0;
+%     idx = 1;
+%     hFig = figure('Name','Real-time z vs z_hat');
+%     hAx  = axes(hFig);
+%     hold(hAx,'on'); grid(hAx,'on');
+%     h1 = plot(hAx, NaN, NaN, 'b', 'LineWidth',1.2);
+%     h2 = plot(hAx, NaN, NaN, 'r--', 'LineWidth',1.2);
+%     legend('z (ground truth)','\hat{z}');
+%     xlabel('Sample index');
+%     ylabel('Amplitude');
+% elseif isempty(flag)
+%     if t(end) - last_t >= 0.02
+%         z_true = x(end,4);
+%         z_hat  = x(end,7);
+% 
+%         h1.XData(idx) = idx;
+%         h1.YData(idx) = z_true;
+%         h2.XData(idx) = idx;
+%         h2.YData(idx) = z_hat;
+% 
+%         idx = idx + 1;
+%         drawnow limitrate;
+%         last_t = t(end);
+%     end
+% elseif strcmp(flag,'done')
+%     fprintf('Simulation finished.\n');
+% end
+% 
+% status = 0;
+% end
+
 %%
-save("audio_noblock.mat",'x_est');
+save("audio_noblock_ver1.mat",'x_est');
 save("audio_noblock_work.mat");

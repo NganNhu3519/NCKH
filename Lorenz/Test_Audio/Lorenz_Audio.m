@@ -221,7 +221,7 @@ function status = odeProgress(t, ~, flag)
 persistent last_t
 
 if isempty(flag)
-    if isempty(last_t) || t(end) - last_t >= 0.005
+    if isempty(last_t) || t(end) - last_t >= 0.01
         fprintf('t = %.4f\n', t(end));
         last_t = t(end);
     end
