@@ -1,49 +1,47 @@
 close all; clear; clc;
+imgH = 64; imgW = 64;
+Img_full = double(imread('cell.tif'));
+Img = Img_full([1:imgH],[1:imgW]);
 
-N = 256;
-imgH = 32;
-imgW = 32;
+x_true = Img(:);
 
-Img_org = imread('cell.tif');
-Img_org = Img_org(1:imgH,1:imgW);
-Img_org = double(Img_org);
-Img_arr = Img_org(:);
+load y_img_noblock_ver3.mat
 
-load y_32.mat
-load img_32.mat
-
-% y_new = x_est(4,:)';
-y_new = y_cp;
-L = length(Img_arr) / N;
-M = length(y_new) / L;
-
+N = length(x_true);
+psi = dctmtx(N);
 Theta = phi * psi';
-
-x1 = zeros(N, L);
-
+s0 = pinv(Theta) * y_cp;
 tic
-for i = 1:L
-    y_seg = y_new((i-1)*M+1:i*M);
-    s0    = pinv(Theta) * y_seg;
-    s_hat = l1eq_pd(s0, Theta, Theta', y_seg, 5e-3, 20);
-    x1(:,i) = psi' * s_hat;
-end
+s_hat = l1eq_pd(s0, Theta, Theta', y_cp, 5e-3, 20);
 recon = toc;
-
-x_rec = x1(:);
-x_hat = reshape(x_rec, imgW, imgH)';
+x_hat = psi' * s_hat;
+x_hat_dn = x_hat * std(x_true) + mean(x_true);
+Img_hat = reshape(x_hat_dn, size(Img));
 
 figure;
-subplot(1,2,1); imshow(uint8(Img_org)); title('Original');
-subplot(1,2,2); imshow(uint8(mat2gray(x_hat)*255)); title('Reconstructed');
+subplot(1,2,1);
+imshow(uint8(Img));
+title('Original image');
+subplot(1,2,2);
+imshow(uint8(mat2gray(Img_hat)*255));
+title('CS reconstructed image'); %(no block-wise)
 
-x_hat_v = x_hat(:);
+Img_arr = x_true;
+x_hat_v = x_hat_dn(:);
 
-mse1 = immse(x_hat_v, Img_arr);
+mse1 = mse(x_hat_v, Img_arr);
 peak_val = max(abs(Img_arr));
 [psnr1, snr1] = psnr(x_hat_v, Img_arr, peak_val);
-CC = corrcoef(Img_arr, x_hat_v); CC = CC(1,2);
+R1  = corrcoef(Img_arr, x_hat_v);
+CC1 = R1(1,2);
 
-fprintf('Reconstruction time: %.4f s\n', recon);
-fprintf('MSE = %.3e | PSNR = %.2f dB | SNR = %.2f dB | CC = %.6f\n', ...
-        mse1, psnr1, snr1, CC);
+fprintf('MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB | CC=%.6f\n', ...
+        mse1, psnr1, snr1, CC1);
+
+figure;
+subplot(1,2,1);
+imshow(uint8(Img));
+title('Original image');
+subplot(1,2,2);
+imshow(uint8(mat2gray(Img_hat)*255));
+title('CS reconstructed image'); %(no block-wise)

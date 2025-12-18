@@ -24,4 +24,4 @@ y_cs(:,i) = y1;
 end
 
 y_cp = y_cs(:);
-save('y_img.mat','phi','y_cp','psi')
+% save('y_img.mat','phi','y_cp','psi')

@@ -1,15 +1,14 @@
 close all; clear all; clc;
 
-%Globals
 global a1 a2 a3 C                
 global R N L M rho             
 global sigma_L rho_L beta_L    
 
 %% System Initialization
 % Lorenz parameters
-sigma_L = 10;          % sigma
+sigma_L = 10;
 rho_L   = 28;          
-beta_L  = 8/3;         % beta
+beta_L  = 8/3;
           
 a1 = 1; 
 a2 = 1; 
@@ -49,7 +48,7 @@ R = P * [zeros(n1-m1,m1); R0];
 Ahat = R * A;
 Ehat = R * E;
 
-%% Check Ranking Conditions (Existence of Observer)
+%% Check Existence of Observer
 n = size(A,2);
 
 rank_a = rank([E;C]);
@@ -75,7 +74,6 @@ fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1))
 L = 1.2 * pinv(C);
 rho = 40;
 
-% N và M
 N = Ahat - L * C;
 format short
 
@@ -85,7 +83,7 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';
 
 %% Simulation
-tspan = 0.01:0.01:4;
+tspan = 0.01:0.01:18;
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
 options = odeset('RelTol',1e-6,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
@@ -156,7 +154,7 @@ global a1 a2 a3
 global C
 global sigma_L rho_L beta_L
 
-load y_img_noblock_ver2.mat
+load y_img_noblock_ver4.mat
 y_cp=y_cp';
 z = y_cp(uint16(100*t));
 
@@ -197,10 +195,10 @@ k2 = 1.5;
 alpha = 0.34;
 beta  = 1.4;
 
-phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-         -k2 .* sign(e) .* abs(e).^beta;
-% phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
-%          -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
+% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+%          -k2 .* sign(e) .* abs(e).^beta;
+phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
+         -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
 G_nl = 0.012 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
 
@@ -233,31 +231,7 @@ end
 
 status = 0;
 end
-% function status = odeProgress(t, x, flag)
-% persistent h1 h2
-% 
-% status = 0;
-% 
-% if strcmp(flag,'init')
-%     figure(99); clf
-%     h1 = plot(0,0,'b'); hold on
-%     h2 = plot(0,0,'r--');
-%     legend('z (truth)','ẑ (estimate)')
-%     xlabel('time'); grid on
-% 
-% elseif isempty(flag)
-%     if ~isempty(t)
-%         z     = x(7,end);   % state z
-%         zhat  = x(4,end);   % estimated z
-%         set(h1,'XData',[get(h1,'XData') t(end)],...
-%                'YData',[get(h1,'YData') z]);
-%         set(h2,'XData',[get(h2,'XData') t(end)],...
-%                'YData',[get(h2,'YData') zhat]);
-%         drawnow limitrate
-%     end
-% end
-% end
 
 %%
-save("img_noblock_ver2.mat",'x_est');
-save("img_0block_ver2.mat");
+save("img_noblock_ver4.mat",'x_est');
+save("img_0block_ver4.mat");
