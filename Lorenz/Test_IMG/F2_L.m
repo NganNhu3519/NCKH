@@ -1,11 +1,10 @@
-close all; clear all; clc;
+close all; clear; clc;
 
 global a1 a2 a3 C                
 global R N L M rho             
 global sigma_L rho_L beta_L    
 
 %% System Initialization
-% Lorenz parameters
 sigma_L = 10;
 rho_L   = 28;          
 beta_L  = 8/3;
@@ -27,7 +26,7 @@ C = [1 0 0 0;
      0 1 0 0;
      0 0 0.01 1];
 
-cond_C = cond(C)
+cond_C = cond(C);
 
 r1 = rank(C);
 [m1,n1] = size(E);
@@ -71,8 +70,8 @@ rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 1.2 * pinv(C);
-rho = 40;
+L = 1.0 * pinv(C);
+rho = 25;
 
 N = Ahat - L * C;
 format short
@@ -83,55 +82,60 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';
 
 %% Simulation
-tspan = 0.01:0.01:18;
+% tspan = 0.01:0.01:60;
+tspan = [0.01 60.01];
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
-options = odeset('RelTol',1e-6,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
+% options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
+Tend = 60;
+options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
+                 'OutputFcn', @(t,~,flag) odeWaitbar(t,flag,Tend));
+
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
 [~, y, x_est, z] = lorenz_smo(t', x');
 
 %% Plotting the Results
-figure
-subplot(2,2,1)
-hold on
-plot(t, x(:,1), t, x_est(1,:))
-grid
-xlabel('time')
-legend('Original state x_1', 'Estimated state')
-set(gca, 'fontsize', 11, 'fontweight', 'bold')
-
-subplot(2,2,2)
-hold on
-plot(t, x(:,2), t, x_est(2,:))
-legend('Original state x_2', 'Estimated state')
-grid
-xlabel('time')
-set(gca, 'fontsize', 11, 'fontweight', 'bold')
-
-subplot(2,2,3)
-hold on
-plot(t, x(:,3), t, x_est(3,:))
-legend('Original state x_3', 'Estimated state')
-grid
-xlabel('time')
-set(gca, 'fontsize', 11, 'fontweight', 'bold')
-
-subplot(2,2,4)
-hold on
-plot(t, z, t, x_est(4,:))
-legend('Transmitted signal', 'Estimated signal')
-grid
-xlabel('time')
-set(gca, 'fontsize', 11, 'fontweight', 'bold')
-
-figure;
-plot(t, z - x_est(4,:), 'LineWidth',1.5);
-xlabel('time');
-ylabel('Error of z');
-title('IMG Error dynamics of z');
-grid on;
+% figure
+% subplot(2,2,1)
+% hold on
+% plot(t, x(:,1), t, x_est(1,:))
+% grid
+% xlabel('time')
+% legend('Original state x_1', 'Estimated state')
+% set(gca, 'fontsize', 11, 'fontweight', 'bold')
+% 
+% subplot(2,2,2)
+% hold on
+% plot(t, x(:,2), t, x_est(2,:))
+% legend('Original state x_2', 'Estimated state')
+% grid
+% xlabel('time')
+% set(gca, 'fontsize', 11, 'fontweight', 'bold')
+% 
+% subplot(2,2,3)
+% hold on
+% plot(t, x(:,3), t, x_est(3,:))
+% legend('Original state x_3', 'Estimated state')
+% grid
+% xlabel('time')
+% set(gca, 'fontsize', 11, 'fontweight', 'bold')
+% 
+% subplot(2,2,4)
+% hold on
+% plot(t, z, t, x_est(4,:))
+% legend('Transmitted signal', 'Estimated signal')
+% grid
+% xlabel('time')
+% set(gca, 'fontsize', 11, 'fontweight', 'bold')
+% 
+% figure;
+% plot(t, z - x_est(4,:), 'LineWidth',1.5);
+% xlabel('time');
+% ylabel('Error of z');
+% title('IMG Error dynamics of z');
+% grid on;
 
 %% NMSE
 mse_img = mse(z,x_est(4,:));
@@ -151,11 +155,10 @@ fprintf('Correlation Coefficient: %f\n', CC);
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)
 global R N L M rho
 global a1 a2 a3     
-global C
-global sigma_L rho_L beta_L
+global C sigma_L rho_L beta_L
 
-load y_img_noblock_ver4.mat
-y_cp=y_cp';
+load y_img_noblock_ver5.mat
+y_cp = y_cp';
 z = y_cp(uint16(100*t));
 
 % Lorenz
@@ -169,7 +172,7 @@ f3 = x1 .* x2 - beta_L * x3;
 
 dxdt1 = [ f1 + a1*z;                          
           f2 + a2*z;
-          f3 + a3*z ];
+          f3 + a3*z];
 
 % Output
 y = C * [x1; x2; x3; z];
@@ -190,15 +193,15 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % % Nonlinear injection
-k1 = 1.5;
-k2 = 1.5;
-alpha = 0.34;
-beta  = 1.4;
+k1 = 1.2;
+k2 = 1.2;
+alpha = 0.3;
+beta  = 1.3;
 
 % phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
 %          -k2 .* sign(e) .* abs(e).^beta;
-phi_nl = -k1 .* tanh(5*e) .* (abs(e) + 1e-6).^alpha ...
-         -k2 .* tanh(5*e) .* (abs(e) + 1e-6).^beta;
+phi_nl = -k1 .* tanh(2*e) .* (abs(e) + 1e-6).^alpha ...
+         -k2 .* tanh(2*e) .* (abs(e) + 1e-6).^beta;
 G_nl = 0.012 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
 
@@ -215,23 +218,23 @@ dxdt = [dxdt1; dxdt2];
 end
 
 %% Đếm time
-function status = odeProgress(t, ~, flag)
-persistent last_t
+function status = odeWaitbar(t, flag, Tend)
+persistent h last_t
+status = 0;
 
-if isempty(flag)
-    if isempty(last_t) || t(end) - last_t >= 0.01
-        fprintf('t = %.4f\n', t(end));
+if strcmp(flag,'init')
+    h = waitbar(0,'Running...');
+    last_t = 0;
+elseif isempty(flag)
+    if t(end) - last_t >= 0.5
+        waitbar(min(1, t(end)/Tend), h, sprintf('t = %.1f s', t(end)));
         last_t = t(end);
     end
-elseif strcmp(flag,'init')
-    last_t = [];
 elseif strcmp(flag,'done')
-    fprintf('Simulation finished.\n');
+    if isvalid(h), close(h); end
 end
-
-status = 0;
 end
 
 %%
-save("img_noblock_ver4.mat",'x_est');
-save("img_0block_ver4.mat");
+save("img_noblock_ver5.mat",'x_est');
+save("img_0block_ver5.mat");

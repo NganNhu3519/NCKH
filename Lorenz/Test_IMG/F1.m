@@ -1,9 +1,10 @@
 %% FILE 1 — CS IMAGE (NO BLOCK-WISE)
 close all; clear; clc;
 
-imgH = 64; imgW = 64;
+imgH = 128; imgW = 128;
 % Img_full = double(imread('cell.tif'));
-Img_full = double(imread('riceblurred.png'));
+% Img_full = double(imread('riceblurred.png'));
+Img_full = double(imread('mri.tif'));
 Img = Img_full([1:imgH],[1:imgW]);
 
 x = Img(:);
@@ -14,7 +15,7 @@ x = (x - mu) / sigma;
 N = length(x);
 psi = dctmtx(N);
 
-M = 1800;
+M = 6000;
 phi = randi([0 1], M, N);
 phi(phi==0) = -1;
 phi = phi / sqrt(M);
@@ -38,13 +39,13 @@ subplot(2,2,4);
 histogram(y_cp,100);
 title('Histogram of CS measurements');
 
-% save('y_img_noblock_ver4.mat','phi','y_cp','mu','sigma');
+save('y_img_noblock_ver5.mat','phi','y_cp','mu','sigma');
 
 %% File 3
 close all; clear; clc;
 
-load y_img_noblock_ver4.mat
-load img_noblock_ver4.mat
+load y_img_noblock_ver5.mat
+load img_noblock_ver5.mat
 
 y_use = x_est(4,:)';
 y_use = y_use(:);
