@@ -134,3 +134,65 @@ title('Original image');
 subplot(1,2,2);
 imshow(uint8(mat2gray(Img_hat)*255));
 title('CS reconstructed image'); %(no block-wise)
+
+%%
+close all; clear; clc;
+
+% files = {'mri.tif','cell.tif','riceblurred.png'};
+ files = {'cameraman.tif'};
+for k = 1:length(files)
+    fprintf('\n===== TEST IMAGE: %s =====\n', files{k});
+
+    Img = double(imread(files{k}));
+    if ndims(Img) == 3
+        Img = rgb2gray(uint8(Img));
+        Img = double(Img);
+    end
+
+    [H,W] = size(Img);
+    x = Img(:);
+
+    figure;
+    subplot(2,2,1);
+    imshow(Img,[]);
+    title(sprintf('%s (%dx%d)',files{k},H,W));
+
+    subplot(2,2,2);
+    histogram(x,100);
+    title('Histogram');
+
+    [Gx,Gy] = gradient(Img);
+    tv_energy = mean(abs(Gx(:)) + abs(Gy(:)));
+
+    dc_ratio = abs(mean(x)) / std(x);
+
+    m = round(0.3 * numel(x));
+    phi = randn(m, numel(x));
+    y = phi * x;
+    x_bp = phi' * y;
+    R = corrcoef(x, x_bp);
+    cs_cc = R(1,2);
+
+    subplot(2,2,3);
+    imagesc(abs(Gx)+abs(Gy)); axis image off;
+    title('Gradient magnitude');
+
+    subplot(2,2,4);
+    text(0.05,0.8,sprintf('TV energy = %.3f',tv_energy),'FontSize',11);
+    text(0.05,0.6,sprintf('DC ratio = %.3f',dc_ratio),'FontSize',11);
+    text(0.05,0.4,sprintf('CS CC = %.3f',cs_cc),'FontSize',11);
+    axis off;
+
+    fprintf('Size      : %dx%d\n',H,W);
+    fprintf('TV energy : %.4f\n',tv_energy);
+    fprintf('DC ratio  : %.4f\n',dc_ratio);
+    fprintf('CS CC     : %.4f\n',cs_cc);
+
+    if tv_energy > 5 && dc_ratio < 3
+        fprintf('=> INPUT QUALITY: GOOD for TV-based CS\n');
+    else
+        fprintf('=> INPUT QUALITY: WEAK / BIASED\n');
+    end
+end
+
+

@@ -70,8 +70,8 @@ rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 1.0 * pinv(C);
-rho = 25;
+L = 1.2 * pinv(C);
+rho = 40;
 
 N = Ahat - L * C;
 format short
@@ -82,12 +82,12 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';
 
 %% Simulation
-tspan = 0.01:0.01:60;
+tspan = 0.01:0.01:40;
 % tspan = [0.01 60.01];
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
 % options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
-Tend = 60;
+Tend = 40;
 options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
                  'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
 
@@ -157,7 +157,7 @@ global R N L M rho
 global a1 a2 a3     
 global C sigma_L rho_L beta_L
 
-load y_img_noblock_ver5.mat
+load y_img_noblock_ver6.mat
 y_cp = y_cp';
 z = y_cp(uint16(100*t));
 
@@ -236,51 +236,26 @@ end
 % end
 
 function status = odeWaitbar(t, x, flag, Tend)
-persistent h last_t zbuf idx
+persistent h last_t
 status = 0;
 
-SAVE_INTERVAL = 0.5;     % cập nhật GUI
-BLOCK_SIZE    = 200;     % số sample mỗi lần ghi ra file
+SAVE_INTERVAL = 0.5;
 
 if strcmp(flag,'init')
     h = waitbar(0,'Running...');
     last_t = 0;
-    zbuf = zeros(1, BLOCK_SIZE);
-    idx  = 0;
 
 elseif isempty(flag)
-    % ===== GUI (giữ nguyên hành vi cũ) =====
     if t(end) - last_t >= SAVE_INTERVAL
         waitbar(min(1, t(end)/Tend), h, sprintf('t = %.1f s', t(end)));
         last_t = t(end);
     end
 
-    % ===== LOG x_est(4,:) =====
-    idx = idx + 1;
-    zbuf(idx) = x(7,end);   % x_est(4) = x(7)
-
-    if idx == BLOCK_SIZE
-        if exist('xest4_log.mat','file')
-            save('xest4_log.mat','zbuf','-append');
-        else
-            save('xest4_log.mat','zbuf');
-        end
-        idx = 0;  % reset buffer
-    end
-
 elseif strcmp(flag,'done')
-    if idx > 0
-        zbuf = zbuf(1:idx);
-        if exist('xest4_log.mat','file')
-            save('xest4_log.mat','zbuf','-append');
-        else
-            save('xest4_log.mat','zbuf');
-        end
-    end
     if isvalid(h), close(h); end
 end
 end
 
 %%
-save("img_noblock_ver5.mat",'x_est');
-save("img_0block_ver5.mat");
+save("img_noblock_ver6.mat",'x_est');
+save("img_0block_ver6.mat");

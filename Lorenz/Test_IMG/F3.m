@@ -1,47 +1,48 @@
 close all; clear; clc;
-imgH = 64; imgW = 64;
+
+load y_img_noblock_ver3.mat
+load img_noblock_ver3.mat
+
+y_use = x_est(4,:)';
+y_use = y_use(:);
+
+imgH = 32;
+imgW = 32;
+
+% Img_full = double(imread('riceblurred.png'));
 Img_full = double(imread('cell.tif'));
-Img = Img_full([1:imgH],[1:imgW]);
+Img = Img_full(1:imgH,1:imgW);
 
 x_true = Img(:);
 
-load y_img_noblock_ver3.mat
+opts.mu = 2^8;
+opts.beta = 2^5;
+opts.tol = 1e-4;
+opts.maxit = 300;
+opts.TVnorm = 1;
 
-N = length(x_true);
-psi = dctmtx(N);
-Theta = phi * psi';
-s0 = pinv(Theta) * y_cp;
 tic
-s_hat = l1eq_pd(s0, Theta, Theta', y_cp, 5e-3, 20);
+[Img_hat, out] = TVAL3(phi, y_use, imgH, imgW, opts);
 recon = toc;
-x_hat = psi' * s_hat;
-x_hat_dn = x_hat * std(x_true) + mean(x_true);
-Img_hat = reshape(x_hat_dn, size(Img));
+
+x_rec  = Img_hat(:);
+
+x_rec = x_rec - mean(x_rec);
+x_rec = x_rec / std(x_rec);
+x_rec = x_rec * std(x_true);
+x_rec = x_rec + mean(x_true);
+
+mse1 = mean((x_rec - x_true).^2);
+
+peak_val = max(x_true);
+psnr1 = 10*log10(peak_val^2 / mse1);
+
+R = corrcoef(x_true, x_rec);
+CC = R(1,2);
 
 figure;
-subplot(1,2,1);
-imshow(uint8(Img));
-title('Original image');
-subplot(1,2,2);
-imshow(uint8(mat2gray(Img_hat)*255));
-title('CS reconstructed image'); %(no block-wise)
+subplot(1,2,1); imshow(Img,[]);
+subplot(1,2,2); imshow(Img_hat,[]);
 
-Img_arr = x_true;
-x_hat_v = x_hat_dn(:);
-
-mse1 = mse(x_hat_v, Img_arr);
-peak_val = max(abs(Img_arr));
-[psnr1, snr1] = psnr(x_hat_v, Img_arr, peak_val);
-R1  = corrcoef(Img_arr, x_hat_v);
-CC1 = R1(1,2);
-
-fprintf('MSE=%.3e | PSNR=%.2f dB | SNR=%.2f dB | CC=%.6f\n', ...
-        mse1, psnr1, snr1, CC1);
-
-figure;
-subplot(1,2,1);
-imshow(uint8(Img));
-title('Original image');
-subplot(1,2,2);
-imshow(uint8(mat2gray(Img_hat)*255));
-title('CS reconstructed image'); %(no block-wise)
+fprintf('Reconstruction time: %.6f s\n', recon);
+fprintf('MSE=%.3e | PSNR=%.2f dB | CC=%.6f\n', mse1, psnr1, CC);

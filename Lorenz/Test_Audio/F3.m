@@ -4,8 +4,8 @@ load chirp.mat
 x_true = y(1:1000);
 x_true = (x_true - mean(x_true)) / std(x_true);
 
-load y_audio_noblock_ver1.mat
-load audio_noblock_ver1.mat
+load y_audio_noblock_ver4.mat
+load audio_noblock_ver4.mat
 
 y_use = x_est(4,:)';
 y_use = y_use(:);
