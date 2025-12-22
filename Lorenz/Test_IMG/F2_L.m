@@ -82,14 +82,14 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';
 
 %% Simulation
-% tspan = 0.01:0.01:60;
-tspan = [0.01 60.01];
+tspan = 0.01:0.01:60;
+% tspan = [0.01 60.01];
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
 % options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
 Tend = 60;
 options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
-                 'OutputFcn', @(t,~,flag) odeWaitbar(t,flag,Tend));
+                 'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
 
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
@@ -218,19 +218,65 @@ dxdt = [dxdt1; dxdt2];
 end
 
 %% Đếm time
-function status = odeWaitbar(t, flag, Tend)
-persistent h last_t
+% function status = odeWaitbar(t, flag, Tend)
+% persistent h last_t
+% status = 0;
+% 
+% if strcmp(flag,'init')
+%     h = waitbar(0,'Running...');
+%     last_t = 0;
+% elseif isempty(flag)
+%     if t(end) - last_t >= 0.5
+%         waitbar(min(1, t(end)/Tend), h, sprintf('t = %.1f s', t(end)));
+%         last_t = t(end);
+%     end
+% elseif strcmp(flag,'done')
+%     if isvalid(h), close(h); end
+% end
+% end
+
+function status = odeWaitbar(t, x, flag, Tend)
+persistent h last_t zbuf idx
 status = 0;
+
+SAVE_INTERVAL = 0.5;     % cập nhật GUI
+BLOCK_SIZE    = 200;     % số sample mỗi lần ghi ra file
 
 if strcmp(flag,'init')
     h = waitbar(0,'Running...');
     last_t = 0;
+    zbuf = zeros(1, BLOCK_SIZE);
+    idx  = 0;
+
 elseif isempty(flag)
-    if t(end) - last_t >= 0.5
+    % ===== GUI (giữ nguyên hành vi cũ) =====
+    if t(end) - last_t >= SAVE_INTERVAL
         waitbar(min(1, t(end)/Tend), h, sprintf('t = %.1f s', t(end)));
         last_t = t(end);
     end
+
+    % ===== LOG x_est(4,:) =====
+    idx = idx + 1;
+    zbuf(idx) = x(7,end);   % x_est(4) = x(7)
+
+    if idx == BLOCK_SIZE
+        if exist('xest4_log.mat','file')
+            save('xest4_log.mat','zbuf','-append');
+        else
+            save('xest4_log.mat','zbuf');
+        end
+        idx = 0;  % reset buffer
+    end
+
 elseif strcmp(flag,'done')
+    if idx > 0
+        zbuf = zbuf(1:idx);
+        if exist('xest4_log.mat','file')
+            save('xest4_log.mat','zbuf','-append');
+        else
+            save('xest4_log.mat','zbuf');
+        end
+    end
     if isvalid(h), close(h); end
 end
 end
