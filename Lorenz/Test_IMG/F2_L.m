@@ -71,7 +71,7 @@ fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1))
 
 %% Sliding Mode Observer Design
 L = 1.2 * pinv(C);
-rho = 40;
+rho = 12;
 
 N = Ahat - L * C;
 format short
@@ -82,12 +82,12 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';
 
 %% Simulation
-tspan = 0.01:0.01:40;
+tspan = 0.01:0.01:81.92;
 % tspan = [0.01 60.01];
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
 % options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
-Tend = 40;
+Tend = 81.92;
 options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
                  'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
 
@@ -97,45 +97,45 @@ recon = toc;
 [~, y, x_est, z] = lorenz_smo(t', x');
 
 %% Plotting the Results
-% figure
-% subplot(2,2,1)
-% hold on
-% plot(t, x(:,1), t, x_est(1,:))
-% grid
-% xlabel('time')
-% legend('Original state x_1', 'Estimated state')
-% set(gca, 'fontsize', 11, 'fontweight', 'bold')
-% 
-% subplot(2,2,2)
-% hold on
-% plot(t, x(:,2), t, x_est(2,:))
-% legend('Original state x_2', 'Estimated state')
-% grid
-% xlabel('time')
-% set(gca, 'fontsize', 11, 'fontweight', 'bold')
-% 
-% subplot(2,2,3)
-% hold on
-% plot(t, x(:,3), t, x_est(3,:))
-% legend('Original state x_3', 'Estimated state')
-% grid
-% xlabel('time')
-% set(gca, 'fontsize', 11, 'fontweight', 'bold')
-% 
-% subplot(2,2,4)
-% hold on
-% plot(t, z, t, x_est(4,:))
-% legend('Transmitted signal', 'Estimated signal')
-% grid
-% xlabel('time')
-% set(gca, 'fontsize', 11, 'fontweight', 'bold')
-% 
-% figure;
-% plot(t, z - x_est(4,:), 'LineWidth',1.5);
-% xlabel('time');
-% ylabel('Error of z');
-% title('IMG Error dynamics of z');
-% grid on;
+figure
+subplot(2,2,1)
+hold on
+plot(t, x(:,1), t, x_est(1,:))
+grid
+xlabel('time')
+legend('Original state x_1', 'Estimated state')
+set(gca, 'fontsize', 11, 'fontweight', 'bold')
+
+subplot(2,2,2)
+hold on
+plot(t, x(:,2), t, x_est(2,:))
+legend('Original state x_2', 'Estimated state')
+grid
+xlabel('time')
+set(gca, 'fontsize', 11, 'fontweight', 'bold')
+
+subplot(2,2,3)
+hold on
+plot(t, x(:,3), t, x_est(3,:))
+legend('Original state x_3', 'Estimated state')
+grid
+xlabel('time')
+set(gca, 'fontsize', 11, 'fontweight', 'bold')
+
+subplot(2,2,4)
+hold on
+plot(t, z, t, x_est(4,:))
+legend('Transmitted signal', 'Estimated signal')
+grid
+xlabel('time')
+set(gca, 'fontsize', 11, 'fontweight', 'bold')
+
+figure;
+plot(t, z - x_est(4,:), 'LineWidth',1.5);
+xlabel('time');
+ylabel('Error of z');
+title('IMG Error dynamics of z');
+grid on;
 
 %% NMSE
 mse_img = mse(z,x_est(4,:));
@@ -157,8 +157,9 @@ global R N L M rho
 global a1 a2 a3     
 global C sigma_L rho_L beta_L
 
-load y_img_noblock_ver6.mat
-y_cp = y_cp';
+load y_img_noblock_ver7.mat
+% y_cp = y_cp';
+y_cp = b.';
 z = y_cp(uint16(100*t));
 
 % Lorenz
@@ -202,13 +203,8 @@ beta  = 1.3;
 %          -k2 .* sign(e) .* abs(e).^beta;
 phi_nl = -k1 .* tanh(2*e) .* (abs(e) + 1e-6).^alpha ...
          -k2 .* tanh(2*e) .* (abs(e) + 1e-6).^beta;
-G_nl = 0.012 * ones(size(L,1), size(C,1));
+G_nl = 0.008 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
-
-%Linear injection
-% G_l = 0.02 * eye(size(L,1), size(C,1));
-% linear_injection = - G_l * e;
-% injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
@@ -257,5 +253,5 @@ end
 end
 
 %%
-save("img_noblock_ver6.mat",'x_est');
-save("img_0block_ver6.mat");
+save("img_noblock_ver7.mat",'x_est');
+save("img_0block_ver7.mat");
