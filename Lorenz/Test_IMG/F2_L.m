@@ -70,8 +70,8 @@ rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 1.2 * pinv(C);
-rho = 12;
+L = 1.5 * pinv(C);
+rho = 35;
 
 N = Ahat - L * C;
 format short
@@ -82,12 +82,12 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';
 
 %% Simulation
-tspan = 0.01:0.01:81.92;
+tspan = 0.01:0.01:98.24;
 % tspan = [0.01 60.01];
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
 % options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
-Tend = 81.92;
+Tend = 98.24;
 options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
                  'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
 
@@ -157,7 +157,7 @@ global R N L M rho
 global a1 a2 a3     
 global C sigma_L rho_L beta_L
 
-load y_img_noblock_ver7.mat
+load y_img_Rcos_ver7.mat
 % y_cp = y_cp';
 y_cp = b.';
 z = y_cp(uint16(100*t));
@@ -253,5 +253,8 @@ end
 end
 
 %%
-save("img_noblock_ver7.mat",'x_est');
-save("img_0block_ver7.mat");
+% save("img_noblock_ver7.mat",'x_est');
+% save("img_0block_ver7.mat");
+
+save("img_Rcos_ver7.mat",'x_est');
+save("img_Rcos_ver7_F2_workspace.mat");

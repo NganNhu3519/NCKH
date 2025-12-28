@@ -82,7 +82,9 @@ M = Mtau';   % xhat = x_obs + M*y
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 tspan = 0.01:0.01:4;
 
-options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress); 
+Tend = 98.24;
+options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
+                 'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
 tic;
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
@@ -222,40 +224,26 @@ end
 status = 0;
 end
 
-% function status = odeProgress(t, x, flag)
-% persistent last_t hFig hAx h1 h2 idx
-% 
-% if strcmp(flag,'init')
-%     last_t = 0;
-%     idx = 1;
-%     hFig = figure('Name','Real-time z vs z_hat');
-%     hAx  = axes(hFig);
-%     hold(hAx,'on'); grid(hAx,'on');
-%     h1 = plot(hAx, NaN, NaN, 'b', 'LineWidth',1.2);
-%     h2 = plot(hAx, NaN, NaN, 'r--', 'LineWidth',1.2);
-%     legend('z (ground truth)','\hat{z}');
-%     xlabel('Sample index');
-%     ylabel('Amplitude');
-% elseif isempty(flag)
-%     if t(end) - last_t >= 0.02
-%         z_true = x(end,4);
-%         z_hat  = x(end,7);
-% 
-%         h1.XData(idx) = idx;
-%         h1.YData(idx) = z_true;
-%         h2.XData(idx) = idx;
-%         h2.YData(idx) = z_hat;
-% 
-%         idx = idx + 1;
-%         drawnow limitrate;
-%         last_t = t(end);
-%     end
-% elseif strcmp(flag,'done')
-%     fprintf('Simulation finished.\n');
-% end
-% 
-% status = 0;
-% end
+function status = odeWaitbar(t, x, flag, Tend)
+persistent h last_t
+status = 0;
+
+SAVE_INTERVAL = 0.5;
+
+if strcmp(flag,'init')
+    h = waitbar(0,'Running...');
+    last_t = 0;
+
+elseif isempty(flag)
+    if t(end) - last_t >= SAVE_INTERVAL
+        waitbar(min(1, t(end)/Tend), h, sprintf('t = %.1f s', t(end)));
+        last_t = t(end);
+    end
+
+elseif strcmp(flag,'done')
+    if isvalid(h), close(h); end
+end
+end
 
 %%
 save("audio_noblock_ver1.mat",'x_est');
