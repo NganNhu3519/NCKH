@@ -1,33 +1,28 @@
-close all;clear all; clc;
+close all;clear ; clc;
 
 N = 1000;
-load gong.mat
-y_audio = y(1:40000);
+load chirp.mat
+y_audio = y(1:1000);
 
-audioSignal = y_audio;
-audio_new = zeros(40000/4,1);
-for k=1:(10000)
-    audio_new(k) = audioSignal(k*4); %Downsampling by a factor of 4
-end
-L=round(length(audio_new)/N);
+audiosignal = y_audio;
+L = round(length(audiosignal)/N); 
 
 psi=dctmtx(N);
-x_transform = psi*audioSignal(1:N,1);
+x_transform = psi*audiosignal(1:N,1);
 
-M = 400;
+M = 500;
 y_cs = zeros(M,L);
 
-%% Sensing matrix construction
-phi=randi([0 1],M,N);
+phi=randi([0 1],M,N); %bernoulli
 phi(phi==0)=-1;
 
 x1 = zeros(N,1);
 for i=1:L
-x1=audio_new(1+(i-1)*N:N*i,1);
+x1=audiosignal(1+(i-1)*N:N*i,1);
 y1 = phi*x1;
 y_cs(:,i) = y1;
 end
 
 %Save file
 y_cp = y_cs(:);
-save('y_Audio_700.mat','phi','y_cp','psi')
+save('y_Audio_ver1.mat','phi','y_cp','psi')

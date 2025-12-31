@@ -88,9 +88,11 @@ M = Mtau';   % xhat = x_obs + M*y
 
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 0.01:0.01:70;
+Tend = 5;
+tspan = 0.01:0.01:Tend; 
 
-options = odeset('RelTol',1e-4,'AbsTol',1e-4, 'OutputFcn', @odeProgress); 
+options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
+                 'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
 tic;
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
@@ -139,16 +141,14 @@ grid on;
 
 %% NMSE
 mse_audio = mse(z,x_est(4,:));
-peak_val = max(abs(z));
-[peaksnr_audio, snr_audio] = psnr(x_est(4,:), z, peak_val);
+psnr_audio = 10*log10(1/mse_audio)
 R = corrcoef(z, x_est(4,:));
 CC = R(1,2);
 
-fprintf('Reconstruction time: %.6f seconds\n', recon);
-fprintf('MSE of Ber: %d \n',mse_audio)
-fprintf('PSNR (Correct): %.4f dB\n', peaksnr_audio);
-fprintf('SNR: %.4f dB\n', snr_audio);
 format long
+fprintf('Reconstruction time: %.6f seconds\n', recon);
+fprintf('MSE of Ber: %e \n',mse_audio)
+fprintf('PSNR (Correct): %.4f dB\n', psnr_audio);
 fprintf('Correlation Coefficient: %f\n', CC);
 
 %% Sliding Mode Observer Function (Lorenz) =====
@@ -159,7 +159,7 @@ global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-load y_Audio_700.mat
+load y_Audio_ver1.mat
 y_cp=y_cp';
 z = y_cp(uint16(100*t));
 
@@ -195,44 +195,45 @@ fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
 % % Nonlinear injection
-% k1 = 3.5;
-% k2 = 2.5;
-% alpha = 0.4;
-% beta  = 2.5;
-% 
-% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-%          -k2 .* sign(e) .* abs(e).^beta;
-% G_nl = 0.01 * ones(size(L,1), size(C,1));
-% nonlinear_injection = G_nl * phi_nl;
-% 
-% %Linear injection
- G_l = 0.05 * eye(size(L,1), size(C,1));
- linear_injection = - G_l * e;
-%  injection = linear_injection + nonlinear_injection;
+k1 = 2.5;
+k2 = 1.8;
+alpha = 0.3;
+beta  = 1.4;
+
+phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+         -k2 .* sign(e) .* abs(e).^beta;
+G_nl = 0.008 * ones(size(L,1), size(C,1));
+nonlinear_injection = G_nl * phi_nl;
+
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(80*e)) + linear_injection;
+        L * (y + rho*tanh(30*e)) + nonlinear_injection;
 dxdt = [dxdt1; dxdt2];
 end
 
 %%
-function status = odeProgress(t, ~, flag)
-persistent last_t
+function status = odeWaitbar(t, x, flag, Tend)
+persistent h last_t
+status = 0;
 
-if isempty(flag)
-    if isempty(last_t) || t(end) - last_t >= 0.01
-        fprintf('t = %.4f\n', t(end));
+SAVE_INTERVAL = 0.5;
+
+if strcmp(flag,'init')
+    h = waitbar(0,'Running...');
+    last_t = 0;
+
+elseif isempty(flag)
+    if t(end) - last_t >= SAVE_INTERVAL
+        waitbar(min(1, t(end)/Tend), h, sprintf('t = %.1f s', t(end)));
         last_t = t(end);
     end
-elseif strcmp(flag,'init')
-    last_t = [];
-elseif strcmp(flag,'done')
-    fprintf('Simulation finished.\n');
-end
 
-status = 0;
+elseif strcmp(flag,'done')
+    if isvalid(h), close(h); end
+end
 end
 
 %%
-save("Audio_700.mat");
+save("audio_ver1.mat",'x_est');
+save("audio_ver1_work.mat");

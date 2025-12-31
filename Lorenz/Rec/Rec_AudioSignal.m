@@ -23,6 +23,7 @@ load D:\Thungan\Github\NCKH\Lorenz\Obs\y_Audio_4_11.mat
 load D:\Thungan\Github\NCKH\Lorenz\Result\Audio_results_6_11.mat
 y_new = results.x_est(4,:)';
 M = length(y_new)/L;  % length of y new
+psi = dct(N); %dctmtx hoặc dct đều được
 Theta = phi*psi';
 nmse_y = mean((y_cp - y_new).^2) / mean(y_cp.^2);
 nmse_y_db = 10*log10(nmse_y);
