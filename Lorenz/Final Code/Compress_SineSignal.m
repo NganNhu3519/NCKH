@@ -1,40 +1,53 @@
-% Author: Uyen L.P. Nguyen 
-% Date: Sept 2024
-
 close all;clear all; clc;
 
-%% Define parameters
-N = 1000; % signal length
+% Define parameters
+N = 1000;
 
-%% finding the K value of an approximately sparse signal
-% load ecgsig.mat
-% x=ecgsig(1:N,1);
 t = 0.01:0.01:10;
 x_in = 0.3*cos(pi*t);
 x_in = x_in';
-psi = dctmtx(N); % sparsitying transform for ECG signals 
-x_transform = psi*x_in;
-%% Find out the minimum value of K
-% K = 60; % sparsity of signal
-% %K=length(find(abs(x_transform)>.05));
-% M=6*K; % the number of measurements 
+psi = dctmtx(N);  
+
 M=400;
-%% Sensing matrix construction
+
+%Sensing matrix construction
 phi=randi([0 1],M,N); %bernoulli
 phi(phi==0)=-1;
 
-%% Sensing using CS 
-y = phi*x_in;
-y_cp =y;
+% Sensing using CS 
+% y = phi*x_in;
+% y_cp =y;
+
 % save('y_sine.mat','phi','y_cp')
 
-% Theta1 = phi*psi';
-% s21 = pinv(Theta1)*y;
-% s1 = l1eq_pd(s21,Theta1,Theta1',y,5e-3,20); % L1-magic toolbox
-% x1 = psi'*s1;
-% %% Reconstruction with 
-% figure;plot(y);title('linear measurement y')
-% figure;plot(x); hold on; plot(x1, 'r.'); title('bernoulli'); legend('Original', 'Recovered');
-% mse1 = mse(x,x1);
-% disp('ECG signal')
-% fprintf('MSE of Ber: %d \n',mse1)
+%% Plot
+load y_sine_v1.mat
+% (a) Original signal
+figure;
+plot(x_in,'LineWidth',1.2);
+grid on;
+xlabel('Index'); ylabel('Amplitude');
+title('Original Signal');
+exportgraphics(gcf,'Original_Signal.png','Resolution',300);
+
+% (b) Compressed measurements
+figure;
+plot(y_cp,'k','LineWidth',1);
+grid on;
+xlabel('Index'); ylabel('Amplitude');
+title('Compressed Measurements');
+exportgraphics(gcf,'Compressed_Measurements.png','Resolution',300);
+
+% (c) Histogram of original signal
+figure;
+histogram(x_in,30);
+xlabel('Amplitude'); ylabel('Count');
+title('Histogram Original');
+exportgraphics(gcf,'Histogram_Original.png','Resolution',300);
+
+% (d) Histogram of compressed signal
+figure;
+histogram(y_cp,30);
+xlabel('Amplitude'); ylabel('Count');
+title('Histogram Compressed');
+exportgraphics(gcf,'Histogram_Compressed.png','Resolution',300);

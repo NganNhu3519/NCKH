@@ -23,14 +23,38 @@ y_cp =y;
 
 %% Plot
 figure;
-subplot(1,2,1);
+% (a) Sparse signal
+subplot(2,2,1);
 stem(x_sparse,'filled');
-title('K-sparse signal');
+title('(a) K-sparse original signal');
 xlabel('Index'); ylabel('Amplitude');
 grid on;
+exportgraphics(gcf,'K-sparse original signal.png','Resolution',300);
 
-subplot(1,2,2);
-imagesc(abs(x_sparse)); 
-colormap('hot'); colorbar;
-title('Heatmap of sparse signal');
+% (b) CS measurements
+subplot(2,2,2);
+plot(y_cp,'k');
+title('(b) Compressed measurements y = \Phi x');
+xlabel('Index'); ylabel('Amplitude');
+grid on;
+exportgraphics(gcf,'Compressed measurements.png','Resolution',300);
 
+% (c) Histogram of sparse signal
+subplot(2,2,3);
+histogram(x_sparse,30);
+title('(c) Histogram of original signal');
+xlabel('Amplitude'); ylabel('Count');
+exportgraphics(gcf,'Histogram of original signal.png','Resolution',300);
+
+% (d) Histogram of measurements
+subplot(2,2,4);
+histogram(y_cp,30);
+title('(d) Histogram of compressed signal');
+xlabel('Amplitude'); ylabel('Count');
+exportgraphics(gcf,'Histogram of compressed signal.png','Resolution',300);
+
+figure;
+imagesc(abs(x_sparse.'));
+colormap hot; colorbar;
+title('Magnitude map of sparse signal');
+exportgraphics(gcf,'Heat Map.png','Resolution',300);

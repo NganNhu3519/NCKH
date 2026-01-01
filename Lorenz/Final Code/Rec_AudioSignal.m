@@ -1,7 +1,7 @@
 close all;clear;clc;
 
-load y_Audio_ver1.mat
-load audio_ver1.mat
+load y_Audio_v1.mat
+load audio_v1_500.mat
 load chirp.mat
 
 y_est = x_est(4,:)';
@@ -65,4 +65,19 @@ SSIM2 = ((2*mux*muy + c1)*(2*sigxy + c2)) / ...
 fprintf('SSIM (function)=%.6f | SSIM (formula)=%.6f\n', SSIM1, SSIM2);
 fprintf('MSE=%.3e | PSNR=%.2f dB | CC=%.6f\n', mse1, psnr1, CC1);
 
+%%
+figure;
+plot(y_est,'b.','MarkerSize',8);
+grid on;
+legend('Estimated signal');
+ylim([-15 15]);
+exportgraphics(gcf,'Estimated_Signal_SMO.png','Resolution',300);
+
+% Original vs Recovered audio
+figure;
+plot(audio_new,'LineWidth',1.5); hold on;
+plot(x_rec,'r.','MarkerSize',10);
+grid on;
+legend('Original','Recovered');
+exportgraphics(gcf,'Original_vs_Recovered.png','Resolution',300);
 

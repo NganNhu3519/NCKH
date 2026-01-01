@@ -3,7 +3,7 @@ N=1000;
 
 %% Load WS-Inputv in
 load y_ECG_4_ver3.mat
-load ecg_ver3.mat
+load ecg_ver3_400.mat
 load ecgsig.mat
 
 x_ecg = ecgsig(1:N,1);
@@ -53,3 +53,20 @@ PRD   = sqrt(sum((x_ecg - x1).^2) / sum(x1.^2)) * 100;
 
 format long
 fprintf('Recon: %.6f seconds | MSE: %e | PSNR: %.4f dB | CC: %f | PRD: %.4f %%\n', recon, mse1, psnr, CC, PRD);
+
+%%
+% Estimated signal (SMO)
+figure;
+plot(y_cp,'.');
+grid on;
+title('Estimated_Signal_SMO');
+exportgraphics(gcf,'Estimated_Signal_SMO.png','Resolution',300);
+
+% ECG reconstruction
+figure;
+plot(x_ecg,'LineWidth',2); hold on;
+plot(x1,'r.','MarkerSize',7);
+grid on;
+legend('Original','Recovered');
+title('ECG Reconstruction');
+exportgraphics(gcf,'ECG Reconstruction.png','Resolution',300);
