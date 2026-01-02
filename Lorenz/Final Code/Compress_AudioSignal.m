@@ -8,7 +8,6 @@ audiosignal = y_audio;
 L = round(length(audiosignal)/N); 
 
 psi=dctmtx(N);
-x_transform = psi*audiosignal(1:N,1);
 
 M = 500;
 y_cs = zeros(M,L);
