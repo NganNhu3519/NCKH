@@ -1,18 +1,16 @@
-close all; clear all; clc;
+close all; clear; clc;
 
-% ===== Globals =====
 global a1 a2 a3 C                
 global R N L M rho             
-global sigma_L rho_L beta_L        
+global sigma_L rho_L beta_L    
 
 %% System Initialization
-% Lorenz parameters
-sigma_L = 10;          % sigma
+sigma_L = 10;
 rho_L   = 28;          
-beta_L  = 8/3;         % beta
+beta_L  = 8/3;
           
-a1 = 1;
-a2 = 1;
+a1 = 1; 
+a2 = 1; 
 a3 = 2;
 
 % System matrices
@@ -24,11 +22,11 @@ A = [0,0,0,a1;
      0,0,0,a2;
      0,0,0,a3];       
 
-%C = randi([0,3],3,4);
-C = [1 0 0 1;
-     0 1 0 1;
+C = [1 0 0 0;
+     0 1 0 0;
      0 0 0.01 1];
-cond_C = cond(C)
+
+cond_C = cond(C);
 
 r1 = rank(C);
 [m1,n1] = size(E);
@@ -49,14 +47,12 @@ R = P * [zeros(n1-m1,m1); R0];
 Ahat = R * A;
 Ehat = R * E;
 
-%% Check Ranking Conditions (Existence of Observer) =====
-n = size(A,2);  % số state = 4 (x1,x2,x3,z)
+%% Check Existence of Observer
+n = size(A,2);
 
-% (a) Impulse observability: rank([E;C]) = n ?
 rank_a = rank([E;C]);
 fprintf('Condition (a) rank([E;C]) = %d (need %d)\n', rank_a, n);
 
-% (b) Finite observability: rank([λE - A; C]) = n ?
 lambda_list = [0 1 10 1i 10i];
 cond_b = true;
 for lam = lambda_list
@@ -70,28 +66,31 @@ if cond_b
     fprintf('Condition (b) seems satisfied (all tested λ OK)\n');
 end
 
-% (c) Observability with canonical Ahat
 rank_obsv = rank(obsv(Ahat,C));
 fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1));
 
 %% Sliding Mode Observer Design
-L = 1.2 * pinv(C);
-rho = 8.0;
+L = 1.5 * pinv(C);
+rho = 35;
 
-% N và M
 N = Ahat - L * C;
 format short
 
 Eigenvalue = eig(N);
 disp(Eigenvalue);
 Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
-M = Mtau';   % xhat = x_obs + M*y
+M = Mtau';
 
 %% Simulation
+tspan = 0.01:0.01:98.24;
+% tspan = [0.01 60.01];
 x0 = [.1, .1, .1, 0, 0, 0, 0];
-tspan = 0.01:0.01:40; 
 
-options = odeset('RelTol',1e-6,'AbsTol',1e-6);
+% options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
+Tend = 98.24;
+options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
+                 'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
+
 tic
 [t, x] = ode45(@lorenz_smo, tspan, x0, options);
 recon = toc;
@@ -140,32 +139,28 @@ grid on;
 
 %% NMSE
 mse_img = mse(z,x_est(4,:));
-peak_val = max(abs(z));
-[peaksnr_img, snr_img] = psnr(x_est(4,:), z, peak_val);
+psnr_img = 10*log10(1/mse_img)
 R = corrcoef(z, x_est(4,:));
 CC = R(1,2);
 
+format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);
 fprintf('MSE of Ber: %d \n',mse_img)
-fprintf('PSNR (Correct): %.4f dB\n', peaksnr_img);
-fprintf('SNR: %.4f dB\n', snr_img);
-format long
+fprintf('PSNR (Correct): %.4f dB\n', psnr_img);
 fprintf('Correlation Coefficient: %f\n', CC);
 
-%% Sliding Mode Observer Function (Lorenz) =====
+%% Sliding Mode Observer Function (Lorenz)
 function [dxdt, y, xhat, z] = lorenz_smo(t, x)
 global R N L M rho
 global a1 a2 a3     
-global C
-global sigma_L rho_L beta_L
-global G_nl G_l
+global C sigma_L rho_L beta_L
 
-%Input signal z(t) từ CS
-load y_img_4_11.mat
-y_cp=y_cp';
+load y_img_Rcos_ver7.mat
+% y_cp = y_cp';
+y_cp = b.';
 z = y_cp(uint16(100*t));
 
-% Lorenz plant dynamics (f(x) + B z)
+% Lorenz
 x1 = x(1,:); 
 x2 = x(2,:); 
 x3 = x(3,:);
@@ -176,7 +171,7 @@ f3 = x1 .* x2 - beta_L * x3;
 
 dxdt1 = [ f1 + a1*z;                          
           f2 + a2*z;
-          f3 + a3*z ];
+          f3 + a3*z];
 
 % Output
 y = C * [x1; x2; x3; z];
@@ -196,106 +191,51 @@ fh1 = sigma_L * (xh2 - xh1);
 fh2 = xh1 .* (rho_L - xh3) - xh2;
 fh3 = xh1 .* xh2 - beta_L * xh3;
 
-% Nonlinear injection
-k1    = 0.8;
-k2    = 1.5;
+% % Nonlinear injection
+k1 = 1.2;
+k2 = 1.2;
 alpha = 0.3;
-beta  = 1.5; 
+beta  = 1.3;
 
-phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
-         -k2 .* sign(e) .* abs(e).^beta;
-G_nl = 0.01 * ones(size(L,1), size(C,1));
+% phi_nl = -k1 .* sign(e) .* abs(e).^alpha ...
+%          -k2 .* sign(e) .* abs(e).^beta;
+phi_nl = -k1 .* tanh(2*e) .* (abs(e) + 1e-6).^alpha ...
+         -k2 .* tanh(2*e) .* (abs(e) + 1e-6).^beta;
+G_nl = 0.008 * ones(size(L,1), size(C,1));
 nonlinear_injection = G_nl * phi_nl;
-
-% Linear injection
-G_l = 0.01 * eye(size(L,1), size(C,1));
- linear_injection = - G_l * e;
- injection = linear_injection + nonlinear_injection;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-        L * (y + rho*tanh(50*e)) + injection ;
+      + L*(y + rho*tanh(2*e)) + nonlinear_injection;
 
 dxdt = [dxdt1; dxdt2];
 end
 
-%% Result
-% results = struct;
-% % % --- Time and states ---
-% results.t         = t;                  % time vector
-% results.x         = x;                  % true states [x1, x2, x3, z]
-% results.x_est     = x_est;              % estimated states
-% results.z         = z;                  % true transmitted signal
-% results.error_z   = error_z;            % error dynamics of z
-% results.NMSE      = nmse_img;               % NMSE value
-% results.x0        = x0;                 % initial condition
-% 
-% % --- System parameters ---
-% results.sigma_L   = sigma_L;            % Lorenz sigma
-% results.rho_L     = rho_L;              % Lorenz rho
-% results.beta_L    = beta_L;             % Lorenz beta
-% results.a1        = a1;                 % system input coeff a1
-% results.a2        = a2;                 % system input coeff a2
-% results.a3        = a3;                 % system input coeff a3
-% % 
-% % % --- Observer matrices ---
-% results.C         = C;                  % observer output matrix
-% results.L         = L;                  % SMO gain matrix
-% results.rho       = rho;                % SMO tanh gain
-% results.N         = N;                  % N matrix
-% results.M         = M;                  % M matrix
-% results.R         = R;                  % R matrix
-% results.Ahat      = Ahat;               % canonical A
-% results.Ehat      = Ehat;               % canonical E
-% results.Eigenvalue = Eigenvalue;        % eigenvalues of N
-% % % 
-% k1    = 0.8;
-% k2    = 1.5;
-% alpha = 0.3;
-% beta  = 1.5; 
-% G_nl = 0.01 * ones(size(L,1), size(C,1));
-% G_l = 0.01 * eye(size(L,1), size(C,1));
-% % 
-% % --- Injection parameters ---
-% results.k1        = k1;                 % nonlinear injection gain 1
-% results.k2        = k2;                 % nonlinear injection gain 2
-% results.alpha     = alpha;              % nonlinear injection exponent alpha
-% results.beta      = beta;               % nonlinear injection exponent beta
-% results.G_nl      = G_nl;               % nonlinear injection matrix
-% results.G_l       = G_l;                % linear injection matrix
-% % 
-% % % --- Additional info ---
-% results.rank_a    = rank_a;             % rank condition (a)
-% results.rank_obsv = rank_obsv;          % rank of observability matrix
-% results.cond_C    = cond_C;             % condition number of C
-% % % 
-% % % % Save to .mat file
-% % % save('D:\NCKH\Github\NCKH\Lorenz\Result\IMG_results_v1.mat','results');
-% save('D:\Thungan\Github\NCKH\Lorenz\Result\IMG_results_v2.mat','results');
-% 
-% %% Save load data
-% plotData = struct;
-% 
-% % --- Time and signals ---
-% plotData.t       = t;                  % thời gian
-% plotData.x_true  = x;                  % trạng thái gốc [x1,x2,x3,z]
-% plotData.x_est   = x_est;              % trạng thái ước lượng
-% plotData.z       = z;                  % tín hiệu truyền
-% plotData.error_z = error_z;            % sai số z
-% 
-% % --- Metrics ---
-% plotData.NMSE    = nmse_img;               % chỉ số NMSE
-% % 
-% % % % --- Parameters (optional) ---
-% plotData.x0      = x0;                 
-% plotData.sigma_L = sigma_L;            
-% plotData.rho_L   = rho_L;              
-% plotData.beta_L  = beta_L;  
-% plotData.rho     = rho;   
-% plotData.k1      = k1;                 
-% plotData.k2      = k2;                 
-% plotData.alpha   = alpha;              
-% plotData.beta    = beta;               
-% % 
-% % % save('D:\NCKH\Github\NCKH\Lorenz\Result\Result_Plot\IMG_v1.mat','plotData');
-% save('D:\Thungan\Github\NCKH\Lorenz\Result\Result_Plot\IMG_v2.mat','plotData');
+%%
+function status = odeWaitbar(t, x, flag, Tend)
+persistent h last_t
+status = 0;
+
+SAVE_INTERVAL = 0.5;
+
+if strcmp(flag,'init')
+    h = waitbar(0,'Running...');
+    last_t = 0;
+
+elseif isempty(flag)
+    if t(end) - last_t >= SAVE_INTERVAL
+        waitbar(min(1, t(end)/Tend), h, sprintf('t = %.1f s', t(end)));
+        last_t = t(end);
+    end
+
+elseif strcmp(flag,'done')
+    if isvalid(h), close(h); end
+end
+end
+
+%%
+% save("img_noblock_ver7.mat",'x_est');
+% save("img_0block_ver7.mat");
+
+save("img_Rcos_ver7.mat",'x_est');
+save("img_Rcos_ver7_F2_workspace.mat");
