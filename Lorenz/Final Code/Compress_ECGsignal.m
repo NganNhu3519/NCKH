@@ -7,7 +7,6 @@ load ecgsig.mat
 x_ecg=ecgsig(1:N,1);
 
 psi=dctmtx(N); %phải là dctmtx
-x_transform=psi*x_ecg;
 
 M = 500;
 
