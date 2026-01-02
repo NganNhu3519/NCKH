@@ -10,7 +10,8 @@ ratio = 0.5; %đo 50%
 projection_matrix_file = ['projections.' num2str(block_size) '.' num2str(ratio) '.mat'];
 A = BCS_SPL_GenerateProjection(block_size, ratio, projection_matrix_file); %key sensing matrix
 
-x_hat = im2col(Img, [block_size block_size], 'distinct');
+% 1 col = 1 block 32x32, chia ảnh thành block và xếp thành ma trận cột
+x_hat = im2col(Img, [block_size block_size], 'distinct'); 
 y = A * x_hat;
 b = y(:);
 
