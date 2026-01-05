@@ -140,8 +140,8 @@ grid on;
 %% NMSE
 mse_img = mse(z,x_est(4,:));
 psnr_img = 10*log10(1/mse_img)
-R = corrcoef(z, x_est(4,:));
-CC = R(1,2);
+Co = corrcoef(z, x_est(4,:));
+CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);
@@ -237,5 +237,5 @@ end
 % save("img_noblock_ver7.mat",'x_est');
 % save("img_0block_ver7.mat");
 
-save("img_Rcos_ver7.mat",'x_est');
-save("img_Rcos_ver7_F2_workspace.mat");
+% save("img_Rcos_ver7.mat",'x_est');
+% save("img_Rcos_ver7_F2_workspace.mat");

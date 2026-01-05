@@ -137,8 +137,8 @@ grid on;
 %% NMSE
 mse_sparse = mse(z,x_est(4,:));
 psnr_sparse = 10*log10(1/mse_sparse)
-R = corrcoef(z, x_est(4,:));
-CC = R(1,2);
+Co = corrcoef(z, x_est(4,:));
+CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);

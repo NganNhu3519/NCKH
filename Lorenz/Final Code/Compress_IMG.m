@@ -20,9 +20,9 @@ b = y(:);
 % 
 % save('y_img_Rcos_ver7_workspace.mat')
 
+%%
 x_vis = A' * y;
 Img_vis = reshape(x_vis(:), p, q);
-
 % Original image
 figure;
 imshow(mat2gray(Img));

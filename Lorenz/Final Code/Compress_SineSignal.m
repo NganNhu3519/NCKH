@@ -20,6 +20,30 @@ phi(phi==0)=-1;
 
 % save('y_sine.mat','phi','y_cp')
 
+%% Chia block
+close all;clear all; clc;
+N = 500;
+t = 0.01:0.01:10;
+x_in = 0.3*cos(pi*t);
+x_in = x_in(:);
+
+L = round(length(x_in)/N);
+
+psi = dctmtx(N);  
+M = 250;
+y_cs = zeros(M, L);
+phi=randi([0 1],M,N);
+phi(phi==0)=-1;
+x1 = zeros(N,1);
+for i = 1:L
+    x1 = x_in(1 + (i-1)*N : N*i, 1);
+    y1 = phi * x1;
+    y_cs(:, i) = y1;
+end
+% Save file
+y_cp = y_cs(:);
+save('y_Sine_Chiablock.mat','phi','y_cp','psi');
+
 %% Plot
 load y_sine_v1.mat
 % (a) Original signal

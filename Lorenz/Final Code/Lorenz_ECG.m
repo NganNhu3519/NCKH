@@ -138,8 +138,8 @@ grid on;
 %% NMSE
 mse_ecg = mse(z,x_est(4,:));
 psnr_ecg = 10*log10(1/mse_ecg);
-R = corrcoef(z, x_est(4,:));
-CC = R(1,2);
+Co = corrcoef(z, x_est(4,:));
+CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);

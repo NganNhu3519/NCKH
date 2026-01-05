@@ -142,8 +142,8 @@ grid on;
 %% NMSE
 mse_audio = mse(z,x_est(4,:));
 psnr_audio = 10*log10(1/mse_audio);
-R = corrcoef(z, x_est(4,:));
-CC = R(1,2);
+Co = corrcoef(z, x_est(4,:));
+CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);

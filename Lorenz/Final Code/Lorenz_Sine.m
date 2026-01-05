@@ -76,7 +76,7 @@ fprintf('Condition (c) rank(obsv(Ahat,C)) = %d / %d\n', rank_obsv, size(Ahat,1))
 
 %% Sliding Mode Observer Design
 L = 1.2 * pinv(C);
-rho = 9.0;
+rho = 8.0;
 
 % N và M
 N = Ahat - L * C;
@@ -143,8 +143,8 @@ grid on;
 %% MSE
 mse_sine = mse(z,x_est(4,:));
 psnr_sine = 10*log10(1/mse_sine)
-R = corrcoef(z, x_est(4,:));
-CC = R(1,2);
+Co = corrcoef(z, x_est(4,:));
+CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);
@@ -160,7 +160,7 @@ global C
 global sigma_L rho_L beta_L
 
 %Input signal z(t) từ CS
-load y_sine
+load y_sine_v1.mat
 y_cp = y_cp';
 z = y_cp(uint16(100*t));  
 
@@ -225,5 +225,8 @@ end
 end
 
 %%
-save("Sine_ver2_0.5.mat",'x_est');
-save("Sine_ver2_work.mat");
+% save("Sine_ver2_0.5.mat",'x_est');
+% save("Sine_ver2_work.mat");
+
+save("Sine_chiablock.mat",'x_est');
+save("Sine_chiablock_work.mat");
