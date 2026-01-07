@@ -141,14 +141,19 @@ title('Sine Error dynamics of z');
 grid on;
 
 %% MSE
-mse_sine = mse(z,x_est(4,:));
-psnr_sine = 10*log10(1/mse_sine)
+% mse_sine = mse(z,x_est(4,:));
+z_norm     = z / max(abs(z));
+x_est_norm = x_est(4,:) / max(abs(z));
+error_z    = z_norm - x_est_norm;
+nmse_sine = mean(error_z.^2);
+
+psnr_sine = 10*log10(1/nmse_sine);
 Co = corrcoef(z, x_est(4,:));
 CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);
-fprintf('MSE of Ber: %d \n',mse_sine)
+fprintf('MSE of Ber: %d \n',nmse_sine)
 fprintf('PSNR (Correct): %.4f dB\n', psnr_sine);
 fprintf('Correlation Coefficient: %f\n', CC);
 
@@ -226,7 +231,7 @@ end
 
 %%
 % save("Sine_ver2_0.5.mat",'x_est');
-% save("Sine_ver2_work.mat");
+% save("Sine_ver1_work.mat");
 
-save("Sine_chiablock.mat",'x_est');
-save("Sine_chiablock_work.mat");
+% save("Sine_chiablock.mat",'x_est');
+% save("Sine_chiablock_work.mat");

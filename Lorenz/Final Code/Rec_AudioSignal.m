@@ -8,7 +8,6 @@ y_est = x_est(4,:)';
 
 audio_new = y(1:1000);
 
-
 N = 1000;
 L = length(audio_new) / N;
 y_new = y_cp;
@@ -43,8 +42,15 @@ plot(x_rec,'r.','MarkerSize',10);
 legend('Original','Recoverer');
 
 %
-mse1 = immse(x_rec(:), audio_new(:));
-psnr1 = 10*log10(1/mse1);
+% mse1 = immse(x_rec(:), audio_new(:));
+z        = audio_new(:);     % ground truth
+z_hat    = x_rec(:);         % reconstructed signal
+z_norm     = z / max(abs(z));
+z_hat_norm = z_hat / max(abs(z));
+error_z    = z_norm - z_hat_norm;
+nmse_audio = mean(error_z.^2);
+
+psnr1 = 10*log10(1/nmse_audio);
 R1 = corrcoef(audio_new(:), x_rec(:));
 CC1 = R1(1,2);
 SSIM1 = ssim(x_rec(:), audio_new(:));
@@ -63,21 +69,21 @@ SSIM2 = ((2*mux*muy + c1)*(2*sigxy + c2)) / ...
         ((mux^2 + muy^2 + c1)*(sigx2 + sigy2 + c2));
 
 fprintf('SSIM (function)=%.6f | SSIM (formula)=%.6f\n', SSIM1, SSIM2);
-fprintf('MSE=%.3e | PSNR=%.2f dB | CC=%.6f\n', mse1, psnr1, CC1);
+fprintf('Recon = %.4fs | MSE=%.3e | PSNR=%.2f dB | CC=%.6f\n', recon,nmse_audio, psnr1, CC1);
 
 %%
 figure;
 plot(y_est,'b.','MarkerSize',8);
 grid on;
-legend('Estimated signal');
+legend('Compressed & encrypted signal in Sparse domain');
 ylim([-15 15]);
-exportgraphics(gcf,'Estimated_Signal_SMO.png','Resolution',300);
+% exportgraphics(gcf,'Compressed & encrypted signal in Sparse domain.png','Resolution',300);
 
 % Original vs Recovered audio
 figure;
 plot(audio_new,'LineWidth',1.5); hold on;
 plot(x_rec,'r.','MarkerSize',10);
 grid on;
-legend('Original','Recovered');
-exportgraphics(gcf,'Original_vs_Recovered.png','Resolution',300);
+legend('Original','Reconstructed');
+% exportgraphics(gcf,'Reconstructed Audio.png','Resolution',300);
 

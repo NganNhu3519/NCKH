@@ -36,7 +36,7 @@ rank([E;C]);
 [U,S,V] = svd(C);
 D1 = S(1:r1,1:r1);
 P = V * blkdiag(inv(D1), eye(n1-r1));
-E2 = E * P * [zeros(r1,n1-r1); eye(n1-r1)]; %Canonical form
+E2 = E * P * [zeros(r1,n1-r1); eye(n1-r1)];
 [U2,S2,V2] = svd(E2);
 r2 = rank(E2);
 D2 = S2(1:r2,1:r2);
@@ -83,7 +83,7 @@ M = Mtau';
 %% Simulation
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
-Tend = 205;
+Tend = 120;
 tspan = 1:1:Tend;
 options = odeset('RelTol',1e-6,'AbsTol',1e-6, ...
                  'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
@@ -135,14 +135,23 @@ title('Error dynamics of z');
 grid on;
 
 %% NMSE
-mse_sparse = mse(z,x_est(4,:));
-psnr_sparse = 10*log10(1/mse_sparse)
+if size(z) ~= size(x_est(4,:))
+    x_est(4,:) = x_est(4,:)';
+end
+
+z_norm     = z / max(abs(z));
+x_est_norm = x_est(4,:) / max(abs(z));
+error_z    = z_norm - x_est_norm;
+nmse = mean(error_z.^2);
+
+% mse_sparse = mse(z,x_est(4,:));
+psnr_sparse = 10*log10(1/nmse);
 Co = corrcoef(z, x_est(4,:));
 CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);
-fprintf('MSE of Ber: %d \n',mse_sparse)
+fprintf('MSE of Ber: %d \n',nmse)
 fprintf('PSNR (Correct): %.4f dB\n', psnr_sparse);
 fprintf('Correlation Coefficient: %f\n', CC);
 
@@ -243,5 +252,5 @@ end
 end
 
 %%
-% save("Sparse_ver1_0.4.mat",'x_est');
-% save("Sparse_ver1_work.mat");
+save("Sparse_ver1_0.4.mat",'x_est');
+save("Sparse_ver1_work.mat");

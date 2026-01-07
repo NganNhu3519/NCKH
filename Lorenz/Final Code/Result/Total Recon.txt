@@ -1,0 +1,23 @@
+Audio
+SSIM (function)=0.909694 | SSIM (formula)=0.983407
+Recon = 0.2060s | MSE=9.978e-04 | PSNR=30.01 dB | CC=0.983481
+
+Sine 
+Reconstruction time: 0.116141 seconds
+MSE of Ber: 8.134928e-07 
+PSNR (Correct): 60.8965 dB
+Correlation Coefficient: 0.999996
+
+Img 
+Recon = 287.4362 | MSE = 6.3706e-03 | CC = 0.983411
+SSIM (function)=0.828007 | SSIM (formula)=0.974111
+
+ECG
+Recon: 0.170927 seconds | MSE: 6.807569e-04 | 
+PSNR: 31.6701 dB | CC: 0.979675 | PRD: 4.1592 %
+
+Sparse
+Reconstruction time: 0.020576 seconds
+MSE of Ber: 2.537699e-05 
+PSNR (Correct): 45.9556 dB
+Correlation Coefficient: 0.999712

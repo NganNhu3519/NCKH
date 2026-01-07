@@ -138,14 +138,19 @@ title('IMG Error dynamics of z');
 grid on;
 
 %% NMSE
-mse_img = mse(z,x_est(4,:));
-psnr_img = 10*log10(1/mse_img)
+% mse_img = mse(z,x_est(4,:));
+z_norm     = z / max(abs(z));
+x_est_norm = x_est(4,:) / max(abs(z));
+error_z    = z_norm - x_est_norm;
+nmse_img = mean(error_z.^2);
+
+psnr_img = 10*log10(1/nmse_img);
 Co = corrcoef(z, x_est(4,:));
 CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);
-fprintf('MSE of Ber: %d \n',mse_img)
+fprintf('MSE of Ber: %d \n',nmse_img)
 fprintf('PSNR (Correct): %.4f dB\n', psnr_img);
 fprintf('Correlation Coefficient: %f\n', CC);
 
@@ -236,6 +241,7 @@ end
 %%
 % save("img_noblock_ver7.mat",'x_est');
 % save("img_0block_ver7.mat");
+save("img_Rcos_work_ver5.mat");
 
 % save("img_Rcos_ver7.mat",'x_est');
 % save("img_Rcos_ver7_F2_workspace.mat");

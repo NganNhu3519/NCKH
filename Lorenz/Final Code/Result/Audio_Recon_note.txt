@@ -1,0 +1,2 @@
+SSIM (function)=0.909694 | SSIM (formula)=0.983407
+Recon = 0.2060s | MSE=9.978e-04 | PSNR=30.01 dB | CC=0.983481

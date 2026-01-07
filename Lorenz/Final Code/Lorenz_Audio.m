@@ -140,14 +140,19 @@ title('Error dynamics of z');
 grid on;
 
 %% NMSE
-mse_audio = mse(z,x_est(4,:));
-psnr_audio = 10*log10(1/mse_audio);
+% mse_audio = mse(z,x_est(4,:));
+z_norm     = z / max(abs(z));
+x_est_norm = x_est(4,:) / max(abs(z));
+error_z    = z_norm - x_est_norm;
+nmse_audio = mean(error_z.^2);
+
+psnr_audio = 10*log10(1/nmse_audio);
 Co = corrcoef(z, x_est(4,:));
 CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);
-fprintf('MSE of Ber: %e \n',mse_audio)
+fprintf('MSE of Ber: %e \n',nmse_audio)
 fprintf('PSNR (Correct): %.4f dB\n', psnr_audio);
 fprintf('Correlation Coefficient: %f\n', CC);
 
@@ -236,4 +241,4 @@ end
 
 %%
 % save("audio_ver1.mat",'x_est');
-% save("audio_ver1_work.mat");
+save("audio_ver1_work.mat");

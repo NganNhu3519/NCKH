@@ -1,0 +1,30 @@
+Output SMO
+Audio
+Reconstruction time: 915.732909 seconds
+MSE of Ber: 7.323617e-06 
+PSNR (Correct): 51.3527 dB
+Correlation Coefficient: 0.999982
+
+Sparse
+Reconstruction time: 288.383670 seconds
+MSE of Ber: 4.084087e-05 
+PSNR (Correct): 43.8891 dB
+Correlation Coefficient: 0.999950
+
+ECG
+Reconstruction time: 377.546409 seconds
+MSE of Ber: 3.354825e-06 
+PSNR: 54.7433 dB
+Correlation Coefficient: 0.999999
+
+Sine
+Reconstruction time: 477.364898 seconds
+MSE of Ber: 6.290191e-07 
+PSNR (Correct): 62.0134 dB
+Correlation Coefficient: 0.999998
+
+IMG
+Reconstruction time: 7623.209801 seconds
+MSE of Ber: 9.136571e-06 
+PSNR (Correct): 50.3922 dB
+Correlation Coefficient: 0.999842

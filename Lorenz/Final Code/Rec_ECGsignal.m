@@ -26,18 +26,6 @@ xmin_1 = min(x1);
 xmax_1= max(x1);
 x1 = (x1 - xmin_1) / (xmax_1 - xmin_1);
 
-% Reconstruction with 
-figure;
-subplot(2,1,1);
-plot(y_cp,'.');
-title('Compressed signal');
-
-subplot(2,1,2);
-plot(x_ecg,'LineWidth',2); hold on;
-plot(x1,'r.', 'MarkerSize',7);
-legend('Original','Recovered');
-title('ECG reconstruction');
-
 %% MSE
 x_ecg = double(x_ecg);
 x1 = double(x1);
@@ -59,14 +47,26 @@ fprintf('Recon: %.6f seconds | MSE: %e | PSNR: %.4f dB | CC: %f | PRD: %.4f %%\n
 figure;
 plot(y_cp,'.');
 grid on;
-title('Estimated_Signal_SMO');
-exportgraphics(gcf,'Estimated_Signal_SMO.png','Resolution',300);
+title('Compressed & encrypted signal in Sparse domain');
+exportgraphics(gcf,'Compressed & encrypted signal in Sparse domain.png','Resolution',300);
 
 % ECG reconstruction
 figure;
 plot(x_ecg,'LineWidth',2); hold on;
 plot(x1,'r.','MarkerSize',7);
 grid on;
-legend('Original','Recovered');
+legend('Original','Reconstructed');
 title('ECG Reconstruction');
-exportgraphics(gcf,'ECG Reconstruction.png','Resolution',300);
+exportgraphics(gcf,'Reconstructed ECG.png','Resolution',300);
+
+% Reconstruction with 
+figure;
+subplot(2,1,1);
+plot(y_cp,'.');
+title('Compressed signal');
+
+subplot(2,1,2);
+plot(x_ecg,'LineWidth',2); hold on;
+plot(x1,'r.', 'MarkerSize',7);
+legend('Original','Recovered');
+title('ECG reconstruction');

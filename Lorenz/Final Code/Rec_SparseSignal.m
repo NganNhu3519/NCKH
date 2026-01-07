@@ -21,13 +21,17 @@ x_hat = psi'*s1;
 
 % Plot
 figure;
-subplot(211),plot(y_cp ,'b.','MarkerSize',10);legend('Compressed & encrypted signal');...
-    xlabel('(a)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);
-subplot(212),plot(x_sparse,'LineWidth',2); hold on; plot(x_hat, 'r.','MarkerSize',5);...
-    legend('Original', 'Recovered');xlabel('(b)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);...
-    xlim([0 512]);
+plot(y_cp ,'b.','MarkerSize',10);legend('Compressed & encrypted signal');
+xlabel('(a)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);
+exportgraphics(gcf,'Compressed & encrypted signal in Sparse domain.png','Resolution',300);
 
-sgtitle('Sparse signal - Compressed \& Encrypted Signal','Interpreter','latex','FontSize',20);
+figure;
+plot(x_sparse,'LineWidth',2); 
+hold on; 
+plot(x_hat, 'r.','MarkerSize',5);
+legend('Original', 'Reconstructed');xlabel('(b)','Interpreter','latex','FontSize',20);set(gca,'FontSize',15);
+xlim([0 512]);
+exportgraphics(gcf,'Reconstructed Sparse.png','Resolution',300);
 
 % MSE
 x_sparse = double(x_sparse);

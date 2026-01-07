@@ -136,14 +136,19 @@ title('ECG Error dynamics of z');
 grid on;
 
 %% NMSE
-mse_ecg = mse(z,x_est(4,:));
-psnr_ecg = 10*log10(1/mse_ecg);
+% mse_ecg = mse(z,x_est(4,:));
+z_norm     = z / max(abs(z));
+x_est_norm = x_est(4,:) / max(abs(z));
+error_z    = z_norm - x_est_norm;
+nmse_ecg = mean(error_z.^2);
+
+psnr_ecg = 10*log10(1/nmse_ecg);
 Co = corrcoef(z, x_est(4,:));
 CC = Co(1,2);
 
 format long
 fprintf('Reconstruction time: %.6f seconds\n', recon);
-fprintf('MSE of Ber: %d \n',mse_ecg)
+fprintf('MSE of Ber: %d \n',nmse_ecg)
 fprintf('PSNR: %.4f dB\n', psnr_ecg);
 fprintf('Correlation Coefficient: %f\n', CC);
 
@@ -235,5 +240,5 @@ end
 end
 
 %%
-save('ecg_ver5.mat','x_est');
-save('ecg_ver5_work.mat');
+% save('ecg_ver5.mat','x_est');
+% save('ecg_work_v3.mat');

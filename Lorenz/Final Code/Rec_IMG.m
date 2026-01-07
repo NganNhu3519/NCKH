@@ -90,7 +90,7 @@ fprintf('SSIM (function)=%.6f | SSIM (formula)=%.6f\n', SSIM1, SSIM2);
 figure;
 imshow(Img_g);
 title('Original');
-exportgraphics(gcf,'Original_Image.png','Resolution',300);
+% exportgraphics(gcf,'Original_Image.png','Resolution',300);
 
 % Reconstructed image
 figure;
@@ -106,19 +106,19 @@ Jh = I(:,2:end);     Jv = I(2:end,:);     Jd = I(2:end,2:end);
 figure;
 scatter(Ih(:),Jh(:),5,'.');
 title('H-plain');
-exportgraphics(gcf,'H_plain.png','Resolution',300);
+% exportgraphics(gcf,'H_plain.png','Resolution',300);
 
 % V-plain
 figure;
 scatter(Iv(:),Jv(:),5,'.');
 title('V-plain');
-exportgraphics(gcf,'V_plain.png','Resolution',300);
+% exportgraphics(gcf,'V_plain.png','Resolution',300);
 
 % D-plain
 figure;
 scatter(Id(:),Jd(:),5,'.');
 title('D-plain');
-exportgraphics(gcf,'D_plain.png','Resolution',300);
+% exportgraphics(gcf,'D_plain.png','Resolution',300);
 
 R = uint8(Img_hat_g*255);
 Rh = R(:,1:end-1);   Rv = R(1:end-1,:);   Rd = R(1:end-1,1:end-1);
@@ -128,16 +128,16 @@ Sh = R(:,2:end);     Sv = R(2:end,:);     Sd = R(2:end,2:end);
 figure;
 scatter(Rh(:),Sh(:),5,'.');
 title('H-recon');
-exportgraphics(gcf,'H_recon.png','Resolution',300);
+% exportgraphics(gcf,'H_recon.png','Resolution',300);
 
 % V-recon
 figure;
 scatter(Rv(:),Sv(:),5,'.');
 title('V-recon');
-exportgraphics(gcf,'V_recon.png','Resolution',300);
+% exportgraphics(gcf,'V_recon.png','Resolution',300);
 
 % D-recon
 figure;
 scatter(Rd(:),Sd(:),5,'.');
 title('D-recon');
-exportgraphics(gcf,'D_recon.png','Resolution',300);
+% exportgraphics(gcf,'D_recon.png','Resolution',300);

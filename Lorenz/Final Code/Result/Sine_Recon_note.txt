@@ -1,0 +1,4 @@
+Reconstruction time: 0.116141 seconds
+MSE of Ber: 8.134928e-07 
+PSNR (Correct): 60.8965 dB
+Correlation Coefficient: 0.999996
