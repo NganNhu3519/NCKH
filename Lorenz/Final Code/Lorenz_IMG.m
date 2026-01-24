@@ -82,19 +82,21 @@ Mtau = linsolve(C', (eye(length(Ehat)) - Ehat)');
 M = Mtau';
 
 %% Simulation
-tspan = 0.01:0.01:98.24;
+tspan = 0.01:0.01:327.68;
 % tspan = [0.01 60.01];
 x0 = [.1, .1, .1, 0, 0, 0, 0];
 
 % options = odeset('RelTol',1e-4,'AbsTol',1e-6, 'OutputFcn', @odeProgress);
-Tend = 98.24;
+Tend = 327.68;
 options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
                  'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
 
+
+[t, x] = ode45(@lorenz_smo, tspan, x0, options); %mã hóa chaotic
+
 tic
-[t, x] = ode45(@lorenz_smo, tspan, x0, options);
-recon = toc;
 [~, y, x_est, z] = lorenz_smo(t', x');
+recon = toc;
 
 %% Plotting the Results
 figure
@@ -160,7 +162,7 @@ global R N L M rho
 global a1 a2 a3     
 global C sigma_L rho_L beta_L
 
-load y_img_Rcos_ver7.mat
+load y_img_NIST_ver1.mat
 % y_cp = y_cp';
 y_cp = b.';
 z = y_cp(uint16(100*t));
@@ -241,7 +243,10 @@ end
 %%
 % save("img_noblock_ver7.mat",'x_est');
 % save("img_0block_ver7.mat");
-save("img_Rcos_work_ver5.mat");
+% save("img_Rcos_work_ver5.mat");
 
 % save("img_Rcos_ver7.mat",'x_est');
 % save("img_Rcos_ver7_F2_workspace.mat");
+
+save("img_NIST_ver1.mat",'x_est');
+save("img_NIST_ver1_work.mat");

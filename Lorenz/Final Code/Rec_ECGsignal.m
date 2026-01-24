@@ -59,7 +59,7 @@ legend('Original','Reconstructed');
 title('ECG Reconstruction');
 exportgraphics(gcf,'Reconstructed ECG.png','Resolution',300);
 
-% Reconstruction with 
+%%
 figure;
 subplot(2,1,1);
 plot(y_cp,'.');

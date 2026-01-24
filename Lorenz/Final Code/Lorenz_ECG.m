@@ -161,7 +161,7 @@ global sigma_L rho_L beta_L
 
 load y_ECG_5_ver5_bernou.mat
 y_cp = y_cp';
-z = y_cp(uint16(100*t));
+z = y_cp(uint16(100*t)); %compress measurement
 
 % Lorenz plant dynamics (f(x) + B z)
 x1 = x(1,:); 
@@ -177,7 +177,7 @@ dxdt1 = [ f1 + a1*z;
           f3 + a3*z ];
 
 % Output
-y = C * [x1; x2; x3; z];
+y = C * [x1; x2; x3; z]; % z(t) trong paper
 
 %Observer estimate
 xhat = [x(4,:); x(5,:); x(6,:); x(7,:)] + M * y;

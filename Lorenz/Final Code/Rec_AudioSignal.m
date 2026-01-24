@@ -30,17 +30,6 @@ x_rec = x1(:);
 x_rec = (x_rec- min(x_rec))/(max(x_rec)-min(x_rec));
 audio_new = (audio_new - min(audio_new)) / (max(audio_new) - min(audio_new));
 
-figure;
-subplot(211)
-plot(y_est,'b.','MarkerSize',8);
-legend('Estimated signal');
-ylim([-15 15])
-
-subplot(212)
-plot(audio_new,'LineWidth',1.5); hold on;
-plot(x_rec,'r.','MarkerSize',10);
-legend('Original','Recoverer');
-
 %
 % mse1 = immse(x_rec(:), audio_new(:));
 z        = audio_new(:);     % ground truth
@@ -70,6 +59,18 @@ SSIM2 = ((2*mux*muy + c1)*(2*sigxy + c2)) / ...
 
 fprintf('SSIM (function)=%.6f | SSIM (formula)=%.6f\n', SSIM1, SSIM2);
 fprintf('Recon = %.4fs | MSE=%.3e | PSNR=%.2f dB | CC=%.6f\n', recon,nmse_audio, psnr1, CC1);
+
+%%
+figure;
+subplot(211)
+plot(y_est,'b.','MarkerSize',8);
+legend('Estimated signal');
+ylim([-15 15])
+
+subplot(212)
+plot(audio_new,'LineWidth',1.5); hold on;
+plot(x_rec,'r.','MarkerSize',10);
+legend('Original','Recoverer');
 
 %%
 figure;
