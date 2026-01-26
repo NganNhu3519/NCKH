@@ -1,28 +1,21 @@
-clc; clear;
+clc; clear; close all
 
-imgExt = {'*.png','*.jpg','*.jpeg','*.tif','*.tiff','*.bmp'};
-imgDir = fullfile(matlabroot,'toolbox');
+load img_NIST_ver1.mat
 
-files = [];
-for k = 1:numel(imgExt)
-    files = [files; dir(fullfile(imgDir,'**',imgExt{k}))];
-end
+x1 = x_est(1,:)';
+x2 = x_est(2,:)';
+x3 = x_est(3,:)';
 
-maxPixels = 0;
-maxFile   = '';
+chaos = [x1; x2; x3];
 
-for k = 1:numel(files)
-    try
-        info = imfinfo(fullfile(files(k).folder, files(k).name));
-        pixels = info.Width * info.Height;
-        if pixels > maxPixels
-            maxPixels = pixels;
-            maxFile = fullfile(files(k).folder, files(k).name);
-        end
-    catch
-        % bỏ qua file lỗi
-    end
-end
+chaos = chaos - mean(chaos);
+chaos = chaos ./ max(abs(chaos));
 
-fprintf('Largest image:\n%s\n', maxFile);
-fprintf('Size: %d x %d (%d pixels)\n', info.Width, info.Height, maxPixels);
+q = uint8( floor( (chaos + 1) * 127.5 ) );
+
+fid = fopen('nist_input.bin','wb');
+fwrite(fid, q, 'uint8');
+fclose(fid);
+
+len_bits = numel(q) * 8;
+disp(len_bits)
