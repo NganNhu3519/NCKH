@@ -90,54 +90,72 @@ x0 = [.1, .1, .1, 0, 0, 0, 0];
 Tend = 327.68;
 options = odeset('RelTol',1e-4,'AbsTol',1e-6, ...
                  'OutputFcn', @(t,x,flag) odeWaitbar(t,x,flag,Tend));
-
-
 [t, x] = ode45(@lorenz_smo, tspan, x0, options); %mã hóa chaotic
-
 tic
 [~, y, x_est, z] = lorenz_smo(t', x');
 recon = toc;
 
 %% Plotting the Results
+t_min = t(1);
+t_max = t(end);
+
+FIG_W = 700;
+FIG_H = 1200;
+AXES_POS = [0.10 0.18 0.85 0.72];
+
 figure
-subplot(2,2,1)
-hold on
-plot(t, x(:,1), t, x_est(1,:))
+set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
+plot(t, x(:,1), t, x_est(1,:),'LineWidth',1.2)
 grid
-xlabel('time')
-legend('Original state x_1', 'Estimated state')
-set(gca, 'fontsize', 11, 'fontweight', 'bold')
+xlabel('Time (s)')
+ylabel('State amplitude')
+legend('Original state x_1','Estimated state','Location','best')
+xlim([t_min t_max])
+set(gca,'fontsize',11,'fontweight','bold')
+saveas(gcf,'State_x1.png')
 
-subplot(2,2,2)
-hold on
-plot(t, x(:,2), t, x_est(2,:))
-legend('Original state x_2', 'Estimated state')
+figure
+set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
+plot(t, x(:,2), t, x_est(2,:),'LineWidth',1.2)
 grid
-xlabel('time')
-set(gca, 'fontsize', 11, 'fontweight', 'bold')
+xlabel('Time (s)')
+ylabel('State amplitude')
+legend('Original state x_2','Estimated state','Location','best')
+xlim([t_min t_max])
+set(gca,'fontsize',11,'fontweight','bold')
+saveas(gcf,'State_x2.png')
 
-subplot(2,2,3)
-hold on
-plot(t, x(:,3), t, x_est(3,:))
-legend('Original state x_3', 'Estimated state')
+figure
+set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
+plot(t, x(:,3), t, x_est(3,:),'LineWidth',1.2)
 grid
-xlabel('time')
-set(gca, 'fontsize', 11, 'fontweight', 'bold')
+xlabel('Time (s)')
+ylabel('State amplitude')
+legend('Original state x_3','Estimated state','Location','best')
+xlim([t_min t_max])
+set(gca,'fontsize',11,'fontweight','bold')
+saveas(gcf,'State_x3.png')
 
-subplot(2,2,4)
-hold on
-plot(t, z, t, x_est(4,:))
-legend('Transmitted signal', 'Estimated signal')
+figure
+set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
+plot(t, z, t, x_est(4,:),'LineWidth',1.2)
 grid
-xlabel('time')
-set(gca, 'fontsize', 11, 'fontweight', 'bold')
+xlabel('Time (s)')
+ylabel('Signal amplitude')
+legend('Transmitted signal','Estimated signal','Location','best')
+xlim([t_min t_max])
+set(gca,'fontsize',11,'fontweight','bold')
+saveas(gcf,'Transmitted & Estimated.png')
 
-figure;
-plot(t, z - x_est(4,:), 'LineWidth',1.5);
-xlabel('time');
-ylabel('Error of z');
-title('IMG Error dynamics of z');
-grid on;
+figure
+set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
+plot(t, z - x_est(4,:),'LineWidth',1.5)
+grid
+xlabel('Time (s)')
+ylabel('Estimation error (dimensionless)')
+xlim([t_min t_max])
+set(gca,'fontsize',11,'fontweight','bold')
+saveas(gcf,'Error_z.png')
 
 %% NMSE
 % mse_img = mse(z,x_est(4,:));
@@ -157,15 +175,15 @@ fprintf('PSNR (Correct): %.4f dB\n', psnr_img);
 fprintf('Correlation Coefficient: %f\n', CC);
 
 %% Sliding Mode Observer Function (Lorenz)
-function [dxdt, y, xhat, z] = lorenz_smo(t, x)
+function [dxdt, y, xhat_c, z] = lorenz_smo(t, x)
 global R N L M rho
 global a1 a2 a3     
 global C sigma_L rho_L beta_L
 
 load y_img_NIST_ver1.mat
 % y_cp = y_cp';
-y_cp = b.';
-z = y_cp(uint16(100*t));
+y = b.';
+y = y(uint16(100*t));
 
 % Lorenz
 x1 = x(1,:); 
@@ -176,23 +194,23 @@ f1 = sigma_L * (x2 - x1);
 f2 = x1 .* (rho_L - x3) - x2;                
 f3 = x1 .* x2 - beta_L * x3;                
 
-dxdt1 = [ f1 + a1*z;                          
-          f2 + a2*z;
-          f3 + a3*z];
+dxdt1 = [ f1 + a1*y;                          
+          f2 + a2*y;
+          f3 + a3*y];
 
 % Output
-y = C * [x1; x2; x3; z];
+z = C * [x1; x2; x3; y];
 
 %Observer estimate
-xhat = [x(4,:); x(5,:); x(6,:); x(7,:)] + M * y;
+xhat_c = [x(4,:); x(5,:); x(6,:); x(7,:)] + M * z; %xchat
 
 %Sliding error
-e = y - C * xhat;
+e = z - C * xhat_c;
 
 %Observer dynamics
-xh1 = xhat(1,:); 
-xh2 = xhat(2,:); 
-xh3 = xhat(3,:);
+xh1 = xhat_c(1,:); 
+xh2 = xhat_c(2,:); 
+xh3 = xhat_c(3,:);
 
 fh1 = sigma_L * (xh2 - xh1);
 fh2 = xh1 .* (rho_L - xh3) - xh2;
@@ -213,7 +231,7 @@ nonlinear_injection = G_nl * phi_nl;
 
 dxdt2 = N * [x(4,:); x(5,:); x(6,:); x(7,:)] + ...
         R * [fh1; fh2; fh3] + ...
-      + L*(y + rho*tanh(2*e)) + nonlinear_injection;
+      + L*(z + rho*tanh(2*e)) + nonlinear_injection;
 
 dxdt = [dxdt1; dxdt2];
 end

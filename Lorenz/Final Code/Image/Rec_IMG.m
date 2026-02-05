@@ -29,10 +29,11 @@ opts.nonneg  = true;
 opts.isreal  = true;
 
 %Test key Phi sensing matrix sai
-A_wrong = orth(randn(size(A,2)))'; A_wrong = A_wrong(1:size(A,1),:);
+A_wrong = orth(randn(size(A,2)))'; 
+A_wrong = A_wrong(1:size(A,1),:);
 
 tic
-[x_rec, out] = RCoS(A, b, p, q, opts);
+[x_rec, out] = RCoS(A_wrong, b, p, q, opts);
 recon = toc;
 
 Img_hat = reshape(x_rec, p, q);
@@ -61,11 +62,11 @@ subplot(2,3,4); scatter(Rh(:),Sh(:),1,'.'); axis([0 255 0 255]); title('(d) H-re
 subplot(2,3,5); scatter(Rv(:),Sv(:),1,'.'); axis([0 255 0 255]); title('(e) V-recon');
 subplot(2,3,6); scatter(Rd(:),Sd(:),1,'.'); axis([0 255 0 255]); title('(f) D-recon');
 
-mse_val = immse(Img_hat_g(:), Img_g(:));
+mse1 = immse(Img_hat_g(:), Img_g(:));
 R = corrcoef(Img_hat_g(:), Img_g(:));
 CC = R(1,2);
 
-fprintf('Recon = %.4f | MSE = %.4e | CC = %.6f\n', recon, mse_val, CC);
+fprintf('Recon = %.4f | MSE = %.4e | CC = %.6f\n', recon, mse1, CC);
 
 SSIM1 = ssim(Img_hat_g, Img_g);
 x = Img_g(:);

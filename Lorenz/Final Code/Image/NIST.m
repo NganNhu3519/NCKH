@@ -30,3 +30,18 @@ fid = fopen('chaos_nist_input.bin','wb');
 fwrite(fid, bitstream, 'ubit1');
 fclose(fid);
 disp('Đã xuất file chaos_nist_input.bin thành công.');
+
+%%
+% Đọc file binary đã tạo
+fid = fopen('chaos_nist_input.bin', 'rb');
+% Đọc dưới dạng bit (ubit1)
+bits = fread(fid, inf, 'ubit1'); 
+fclose(fid);
+
+% Chuyển sang chuỗi ký tự '0' và '1'
+bit_string = char(bits' + '0');
+
+% Vì chuỗi rất dài (786,432 ký tự), anh nên lấy một đoạn 
+% hoặc xuất ra file .txt để copy cho nhẹ máy
+clipboard('copy', bit_string); % Tự động copy toàn bộ chuỗi vào bộ nhớ đệm (Ctrl+V)
+disp('Đã copy chuỗi bit vào Clipboard. Anh chỉ cần sang web và nhấn Ctrl+V.');
