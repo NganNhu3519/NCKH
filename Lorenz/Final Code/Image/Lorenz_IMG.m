@@ -97,65 +97,46 @@ recon = toc;
 
 %% Plotting the Results
 t_min = t(1);
-t_max = t(end);
-
-FIG_W = 700;
-FIG_H = 1200;
-AXES_POS = [0.10 0.18 0.85 0.72];
-
 figure
-set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
-plot(t, x(:,1), t, x_est(1,:),'LineWidth',1.2)
+subplot(2,2,1)
+hold on
+plot(t, x(:,1), t, x_est(1,:))
 grid
-xlabel('Time (s)')
-ylabel('State amplitude')
-legend('Original state x_1','Estimated state','Location','best')
-xlim([t_min t_max])
-set(gca,'fontsize',11,'fontweight','bold')
-saveas(gcf,'State_x1.png')
+xlabel('time')
+legend('Original state x_1', 'Estimated state')
+set(gca, 'fontsize', 11, 'fontweight', 'bold')
 
-figure
-set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
-plot(t, x(:,2), t, x_est(2,:),'LineWidth',1.2)
+subplot(2,2,2)
+hold on
+plot(t, x(:,2), t, x_est(2,:))
+legend('Original state x_2', 'Estimated state')
 grid
-xlabel('Time (s)')
-ylabel('State amplitude')
-legend('Original state x_2','Estimated state','Location','best')
-xlim([t_min t_max])
-set(gca,'fontsize',11,'fontweight','bold')
-saveas(gcf,'State_x2.png')
+xlabel('time')
+set(gca, 'fontsize', 11, 'fontweight', 'bold')
 
-figure
-set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
-plot(t, x(:,3), t, x_est(3,:),'LineWidth',1.2)
+subplot(2,2,3)
+hold on
+plot(t, x(:,3), t, x_est(3,:))
+legend('Original state x_3', 'Estimated state')
 grid
-xlabel('Time (s)')
-ylabel('State amplitude')
-legend('Original state x_3','Estimated state','Location','best')
-xlim([t_min t_max])
-set(gca,'fontsize',11,'fontweight','bold')
-saveas(gcf,'State_x3.png')
+xlabel('time')
+set(gca, 'fontsize', 11, 'fontweight', 'bold')
 
-figure
-set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
-plot(t, z, t, x_est(4,:),'LineWidth',1.2)
+subplot(2,2,4)
+hold on
+plot(t, z, t, x_est(4,:))
+legend('Transmitted signal', 'Estimated signal')
 grid
-xlabel('Time (s)')
-ylabel('Signal amplitude')
-legend('Transmitted signal','Estimated signal','Location','best')
-xlim([t_min t_max])
-set(gca,'fontsize',11,'fontweight','bold')
-saveas(gcf,'Transmitted & Estimated.png')
+xlabel('time')
+set(gca, 'fontsize', 11, 'fontweight', 'bold')
 
-figure
-set(gcf,'Units','pixels','Position',[100 100 FIG_W FIG_H])
-plot(t, z - x_est(4,:),'LineWidth',1.5)
-grid
-xlabel('Time (s)')
-ylabel('Estimation error (dimensionless)')
-xlim([t_min t_max])
-set(gca,'fontsize',11,'fontweight','bold')
-saveas(gcf,'Error_z.png')
+figure;
+plot(t, z - x_est(4,:), 'LineWidth',1.5);
+ax = gca; ax.YAxis.Exponent = 0; ytickformat('%.3f')
+xlabel('time');
+ylabel('Error of z');
+title('ECG Error dynamics of z');
+grid on;
 
 %% NMSE
 % mse_img = mse(z,x_est(4,:));
@@ -266,5 +247,5 @@ end
 % save("img_Rcos_ver7.mat",'x_est');
 % save("img_Rcos_ver7_F2_workspace.mat");
 
-save("img_NIST_ver1.mat",'x_est');
-save("img_NIST_ver1_work.mat");
+% save("img_NIST_ver1.mat",'x_est');
+% save("img_NIST_ver1_work.mat");

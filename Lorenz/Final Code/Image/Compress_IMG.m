@@ -40,23 +40,23 @@ x_vec = Img(:);
 
 % CS measurements
 figPos  = [100 100 800 900];
-
 figure('Position',figPos);
 
 subplot(2,1,1)
 plot(x_vec,'k','LineWidth',0.8);
-grid on;
+grid on
 xlabel('Sample index');
 ylabel('Amplitude');
-title('(a)','FontWeight','normal')
-set(gca,'Position',[0.12 0.55 0.82 0.36]);
+set(gca,'Position',[0.12 0.55 0.82 0.36],'FontSize',10)
+text(0.5,-0.18,'(a)','Units','normalized','HorizontalAlignment','center','FontWeight','normal','FontSize',11)
+
 subplot(2,1,2)
 plot(b,'k','LineWidth',0.8);
-grid on;
+grid on
 xlabel('Sample index');
 ylabel('Amplitude');
-title('(b)','FontWeight','normal')
-set(gca,'Position',[0.12 0.10 0.82 0.36]);
+set(gca,'Position',[0.12 0.10 0.82 0.36],'FontSize',10)
+text(0.5,-0.18,'(b)','Units','normalized','HorizontalAlignment','center','FontWeight','normal','FontSize',11)
 
 exportgraphics(gcf,'CS_Overview.png','Resolution',300);
 
@@ -117,12 +117,13 @@ title('D-encrypted');
 exportgraphics(gcf,'D_CS_encrypted.png','Resolution',300);
 
 %%
-close all;
+close all
 x_vis = A' * y;
 Img_vis = reshape(x_vis(:), p, q);
-close all;
+
 Img = imread('cameraman.tif');
 I = double(Img);
+
 Ih = I(:,1:end-1);   Iv = I(1:end-1,:);   Id = I(1:end-1,1:end-1);
 Jh = I(:,2:end);     Jv = I(2:end,:);     Jd = I(2:end,2:end);
 
@@ -135,39 +136,36 @@ CC_V_enc = corrcoef(Ev(:), Fv(:)); CC_V_enc = CC_V_enc(1,2);
 CC_D_enc = corrcoef(Ed(:), Fd(:)); CC_D_enc = CC_D_enc(1,2);
 fprintf('Encrypted CC: H=%.4f, V=%.4f, D=%.4f\n', CC_H_enc, CC_V_enc, CC_D_enc);
 
-% Tạo figure gộp 2×3
 figure('Position',[100 100 1200 700]);
 
-% Hàng 1: Plain images
 subplot(2,3,1)
-scatter(Id(:),Jd(:),30,'.');
-title('(a)','FontWeight','normal','FontSize',11)
-set(gca,'Position',[0.08 0.55 0.26 0.38]);
+scatter(Id(:),Jd(:),30,'.')
+set(gca,'Position',[0.08 0.55 0.26 0.38],'FontSize',10)
+text(0.5,-0.12,'(a)','Units','normalized','HorizontalAlignment','center','FontSize',11)
 
 subplot(2,3,2)
-scatter(Iv(:),Jv(:),30,'.');
-title('(b)','FontWeight','normal','FontSize',11)
-set(gca,'Position',[0.38 0.55 0.26 0.38]);
+scatter(Iv(:),Jv(:),30,'.')
+set(gca,'Position',[0.38 0.55 0.26 0.38],'FontSize',10)
+text(0.5,-0.12,'(b)','Units','normalized','HorizontalAlignment','center','FontSize',11)
 
 subplot(2,3,3)
-scatter(Ih(:),Jh(:),30,'.');
-title('(c)','FontWeight','normal','FontSize',11)
-set(gca,'Position',[0.68 0.55 0.26 0.38]);
+scatter(Ih(:),Jh(:),30,'.')
+set(gca,'Position',[0.68 0.55 0.26 0.38],'FontSize',10)
+text(0.5,-0.12,'(c)','Units','normalized','HorizontalAlignment','center','FontSize',11)
 
-% Hàng 2: Encrypted images
 subplot(2,3,4)
-scatter(Ed(:),Fd(:),30,'.');
-title('(d)','FontWeight','normal','FontSize',11)
-set(gca,'Position',[0.08 0.08 0.26 0.38]);
+scatter(Ed(:),Fd(:),30,'.')
+set(gca,'Position',[0.08 0.08 0.26 0.38],'FontSize',10)
+text(0.5,-0.12,'(d)','Units','normalized','HorizontalAlignment','center','FontSize',11)
 
 subplot(2,3,5)
-scatter(Ev(:),Fv(:),30,'.');
-title('(e)','FontWeight','normal','FontSize',11)
-set(gca,'Position',[0.38 0.08 0.26 0.38]);
+scatter(Ev(:),Fv(:),30,'.')
+set(gca,'Position',[0.38 0.08 0.26 0.38],'FontSize',10)
+text(0.5,-0.12,'(e)','Units','normalized','HorizontalAlignment','center','FontSize',11)
 
 subplot(2,3,6)
-scatter(Eh(:),Fh(:),30,'.');
-title('(f)','FontWeight','normal','FontSize',11)
-set(gca,'Position',[0.68 0.08 0.26 0.38]);
+scatter(Eh(:),Fh(:),30,'.')
+set(gca,'Position',[0.68 0.08 0.26 0.38],'FontSize',10)
+text(0.5,-0.12,'(f)','Units','normalized','HorizontalAlignment','center','FontSize',11)
 
 exportgraphics(gcf,'DVH_Analysis.png','Resolution',300);

@@ -142,3 +142,20 @@ figure;
 scatter(Rd(:),Sd(:),5,'.');
 title('D-recon');
 exportgraphics(gcf,'D_recon.png','Resolution',300);
+
+%%
+figPos = [100 100 700 450];
+figure('Position',figPos);
+
+subplot(1,2,1)
+imshow(Img_g)
+set(gca,'Position',[0.06 0.18 0.43 0.72])
+text(0.5,-0.10,'(a)','Units','normalized','HorizontalAlignment','center','FontSize',12)
+
+subplot(1,2,2)
+imshow(Img_hat_g)
+set(gca,'Position',[0.51 0.18 0.43 0.72])
+text(0.5,-0.10,'(b)','Units','normalized','HorizontalAlignment','center','FontSize',12)
+
+exportgraphics(gcf,'Image_Comparison.png','Resolution',300);
+
