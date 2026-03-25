@@ -47,18 +47,18 @@ plot(x_vec,'k','LineWidth',0.8);
 grid on
 xlabel('Sample index');
 ylabel('Amplitude');
-set(gca,'Position',[0.12 0.55 0.82 0.36],'FontSize',10)
-text(0.5,-0.18,'(a)','Units','normalized','HorizontalAlignment','center','FontWeight','normal','FontSize',11)
+% set(gca,'Position',[0.12 0.55 0.82 0.36],'FontSize',10)
+% text(0.5,-0.18,'(a)','Units','normalized','HorizontalAlignment','center','FontWeight','normal','FontSize',11)
 
 subplot(2,1,2)
 plot(b,'k','LineWidth',0.8);
 grid on
 xlabel('Sample index');
 ylabel('Amplitude');
-set(gca,'Position',[0.12 0.10 0.82 0.36],'FontSize',10)
-text(0.5,-0.18,'(b)','Units','normalized','HorizontalAlignment','center','FontWeight','normal','FontSize',11)
+% set(gca,'Position',[0.12 0.10 0.82 0.36],'FontSize',10)
+% text(0.5,-0.18,'(b)','Units','normalized','HorizontalAlignment','center','FontWeight','normal','FontSize',11)
 
-exportgraphics(gcf,'CS_Overview.png','Resolution',300);
+% exportgraphics(gcf,'CS_Overview.png','Resolution',300);
 
 %% 
 close all;
