@@ -9,7 +9,9 @@ for i = 1:3
 val = X(:,i);
 temp_bits = mod(floor(abs(val) * 1e10), 256);
 bin_matrix = dec2bin(temp_bits, 8) - '0';
-bitstream = [bitstream; bin_matrix(:)];
+% bitstream = [bitstream; bin_matrix(:)];
+temp_stream = bin_matrix';
+bitstream = [bitstream; temp_stream(:)];
 end
 
 bitstream = uint8(bitstream);
